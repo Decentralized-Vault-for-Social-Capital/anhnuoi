@@ -1,187 +1,199 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Heart, LogOut } from "lucide-react";
-import {
-  useWeb3AuthConnect,
-  useWeb3AuthDisconnect,
-  useWeb3AuthUser,
-} from "@web3auth/modal/react";
-import { useAccount } from "wagmi";
+import { Menu, X, Heart, LogOut, User, ChevronRight } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const {
-    connect,
-    isConnected,
-    loading: connectLoading,
-  } = useWeb3AuthConnect();
-  const { disconnect, loading: disconnectLoading } = useWeb3AuthDisconnect();
-  const { userInfo } = useWeb3AuthUser();
-  const { address } = useAccount();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { login, logout, isLoading, isAuthenticated, user, userInfo, address } =
+    useAuth();
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const truncateAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
+  const displayName =
+    user?.name ||
+    userInfo?.name ||
+    (address && truncateAddress(address)) ||
+    "User";
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-[#F7F3E9]/95 backdrop-blur-md shadow-sm"
+          : "bg-transparent"
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-400 to-red-500 flex items-center justify-center">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-11 h-11 rounded-xl bg-[#C25E44] flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
               <Heart className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-800">Anh Nuôi</span>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold text-[#2D3A2E] font-[family-name:var(--font-montserrat)]">
+                Nuôi Em
+              </span>
+              <span className="text-xs text-[#6B7280] -mt-0.5">Anh Nuôi</span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <Link
-              href="#about"
-              className="text-gray-600 hover:text-orange-500 transition-colors font-medium"
+              href="#story"
+              className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-sm"
             >
-              Giới thiệu
-            </Link>
-            <Link
-              href="#mission"
-              className="text-gray-600 hover:text-orange-500 transition-colors font-medium"
-            >
-              Sứ mệnh
-            </Link>
-            <Link
-              href="#impact"
-              className="text-gray-600 hover:text-orange-500 transition-colors font-medium"
-            >
-              Tác động
+              Về dự án
             </Link>
             <Link
               href="#how-it-works"
-              className="text-gray-600 hover:text-orange-500 transition-colors font-medium"
+              className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-sm"
             >
               Cách thức
+            </Link>
+            <Link
+              href="/children"
+              className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-sm"
+            >
+              Danh sách em
             </Link>
           </nav>
 
           {/* Connect Wallet Button */}
           <div className="hidden md:flex items-center gap-4">
-            {isConnected ? (
+            {isAuthenticated ? (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full">
-                  {userInfo?.profileImage && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-[#EDE8DC] rounded-xl border border-[#E5E1D8]">
+                  {userInfo?.profileImage ? (
                     <img
                       src={userInfo.profileImage}
                       alt="Profile"
-                      className="w-6 h-6 rounded-full"
+                      className="w-7 h-7 rounded-lg object-cover"
                     />
+                  ) : (
+                    <div className="w-7 h-7 rounded-lg bg-[#7D8A4E] flex items-center justify-center">
+                      <User className="w-4 h-4 text-white" />
+                    </div>
                   )}
-                  <span className="text-sm font-medium text-gray-700">
-                    {userInfo?.name || (address && truncateAddress(address))}
+                  <span className="text-sm font-medium text-[#2D3A2E]">
+                    {displayName}
                   </span>
                 </div>
                 <Button
-                  onClick={() => disconnect()}
+                  onClick={() => logout()}
                   variant="outline"
                   size="sm"
-                  className="rounded-full"
-                  disabled={disconnectLoading}
+                  className="rounded-xl border-2 border-[#2D3A2E] text-[#2D3A2E] hover:bg-[#2D3A2E] hover:text-white font-medium"
+                  disabled={isLoading}
                 >
-                  <LogOut className="w-4 h-4 mr-1" />
-                  {disconnectLoading ? "..." : "Thoát"}
+                  <LogOut className="w-4 h-4 mr-1.5" />
+                  {isLoading ? "..." : "Thoát"}
                 </Button>
               </div>
             ) : (
               <Button
-                onClick={() => connect()}
-                className="bg-gradient-to-r from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600 text-white font-bold rounded-full px-6"
-                disabled={connectLoading}
+                onClick={() => login()}
+                className="bg-[#C25E44] hover:bg-[#A14D38] text-white font-bold rounded-xl px-6 border-2 border-[#C25E44] hover:border-[#A14D38] transition-all hover:scale-[1.02]"
+                disabled={isLoading}
               >
-                {connectLoading ? "Đang kết nối..." : "Đăng nhập"}
+                {isLoading ? "Đang kết nối..." : "Đăng nhập"}
+                <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             )}
           </div>
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 rounded-xl hover:bg-[#EDE8DC] transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? (
-              <X className="w-6 h-6 text-gray-600" />
+              <X className="w-6 h-6 text-[#2D3A2E]" />
             ) : (
-              <Menu className="w-6 h-6 text-gray-600" />
+              <Menu className="w-6 h-6 text-[#2D3A2E]" />
             )}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t">
+          <div className="md:hidden py-6 border-t border-[#E5E1D8] bg-[#F7F3E9]">
             <nav className="flex flex-col gap-4">
               <Link
-                href="#about"
-                className="text-gray-600 hover:text-orange-500 transition-colors font-medium"
+                href="#story"
+                className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium px-2 py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Giới thiệu
-              </Link>
-              <Link
-                href="#mission"
-                className="text-gray-600 hover:text-orange-500 transition-colors font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sứ mệnh
-              </Link>
-              <Link
-                href="#impact"
-                className="text-gray-600 hover:text-orange-500 transition-colors font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Tác động
+                Về dự án
               </Link>
               <Link
                 href="#how-it-works"
-                className="text-gray-600 hover:text-orange-500 transition-colors font-medium"
+                className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium px-2 py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Cách thức
               </Link>
-              <div className="pt-4">
-                {isConnected ? (
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
-                      {userInfo?.profileImage && (
+              <Link
+                href="/children"
+                className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium px-2 py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Danh sách em
+              </Link>
+              <div className="pt-4 mt-2 border-t border-[#E5E1D8]">
+                {isAuthenticated ? (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3 px-4 py-3 bg-[#EDE8DC] rounded-xl">
+                      {userInfo?.profileImage ? (
                         <img
                           src={userInfo.profileImage}
                           alt="Profile"
-                          className="w-6 h-6 rounded-full"
+                          className="w-8 h-8 rounded-lg object-cover"
                         />
+                      ) : (
+                        <div className="w-8 h-8 rounded-lg bg-[#7D8A4E] flex items-center justify-center">
+                          <User className="w-4 h-4 text-white" />
+                        </div>
                       )}
-                      <span className="text-sm font-medium text-gray-700">
-                        {userInfo?.name ||
-                          (address && truncateAddress(address))}
+                      <span className="text-sm font-medium text-[#2D3A2E]">
+                        {displayName}
                       </span>
                     </div>
                     <Button
-                      onClick={() => disconnect()}
+                      onClick={() => logout()}
                       variant="outline"
-                      className="w-full"
-                      disabled={disconnectLoading}
+                      className="w-full rounded-xl border-2 border-[#2D3A2E] text-[#2D3A2E] hover:bg-[#2D3A2E] hover:text-white font-medium"
+                      disabled={isLoading}
                     >
                       <LogOut className="w-4 h-4 mr-2" />
-                      {disconnectLoading ? "Đang thoát..." : "Đăng xuất"}
+                      {isLoading ? "Đang thoát..." : "Đăng xuất"}
                     </Button>
                   </div>
                 ) : (
                   <Button
-                    onClick={() => connect()}
-                    className="w-full bg-gradient-to-r from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600 text-white font-bold"
-                    disabled={connectLoading}
+                    onClick={() => login()}
+                    className="w-full bg-[#C25E44] hover:bg-[#A14D38] text-white font-bold rounded-xl border-2 border-[#C25E44]"
+                    disabled={isLoading}
                   >
-                    {connectLoading ? "Đang kết nối..." : "Đăng nhập"}
+                    {isLoading ? "Đang kết nối..." : "Đăng nhập"}
+                    <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 )}
               </div>
