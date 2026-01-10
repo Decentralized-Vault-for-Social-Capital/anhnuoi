@@ -22,11 +22,7 @@ export async function createPayment(
   token: string,
   data: CreatePaymentRequest
 ): Promise<ApiResult<CreatePaymentResponse>> {
-  return apiClient.post<CreatePaymentResponse>(
-    "/api/payment/create",
-    data,
-    token
-  );
+  return apiClient.post<CreatePaymentResponse>("/payment/create", data, token);
 }
 
 /**
@@ -40,7 +36,7 @@ export async function getTransactions(
   limit: number = 50
 ): Promise<ApiResult<TransactionsResponse>> {
   return apiClient.get<TransactionsResponse>(
-    `/api/payment/transactions?limit=${limit}`,
+    `/payment/transactions?limit=${limit}`,
     token
   );
 }
@@ -56,7 +52,7 @@ export async function getOrderStatus(
   orderId: string
 ): Promise<ApiResult<OrderStatusResponse>> {
   return apiClient.get<OrderStatusResponse>(
-    `/api/payment/order/${encodeURIComponent(orderId)}`,
+    `/payment/order/${encodeURIComponent(orderId)}`,
     token
   );
 }
@@ -68,7 +64,7 @@ export async function getOrderStatus(
 export async function getExchangeRate(): Promise<
   ApiResult<ExchangeRateResponse>
 > {
-  return apiClient.get<ExchangeRateResponse>("/api/payment/rate");
+  return apiClient.get<ExchangeRateResponse>("/payment/rate");
 }
 
 /**

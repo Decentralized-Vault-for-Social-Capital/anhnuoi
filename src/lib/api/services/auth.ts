@@ -15,11 +15,7 @@ export async function login(
   walletAddress: string,
   token: string
 ): Promise<ApiResult<LoginResponse>> {
-  return apiClient.post<LoginResponse>(
-    "/api/auth/login",
-    { walletAddress },
-    token
-  );
+  return apiClient.post<LoginResponse>("/auth/login", { walletAddress }, token);
 }
 
 /**
@@ -28,5 +24,5 @@ export async function login(
  * @returns User profile data
  */
 export async function getMe(token: string): Promise<ApiResult<MeResponse>> {
-  return apiClient.get<MeResponse>("/api/auth/me", token);
+  return apiClient.get<MeResponse>("/auth/me", token);
 }

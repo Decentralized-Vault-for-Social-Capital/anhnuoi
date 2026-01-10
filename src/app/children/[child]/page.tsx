@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, notFound } from "next/navigation";
+import { useParams, useRouter, notFound } from "next/navigation";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   MapPin,
@@ -39,11 +40,57 @@ const needIcons: Record<string, React.ReactNode> = {
 
 export default function ChildDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const childId = params.child as string;
 
   const child = useMemo(() => {
     return mockChildren.find((c) => c.id === childId);
   }, [childId]);
+
+  // Handle sponsor button click - redirect to payment page with child info
+  const handleSponsor = useCallback(() => {
+    if (!child) return;
+    const searchParams = new URLSearchParams({
+      childId: child.id,
+      childName: child.name,
+      amount: child.monthlySupport.toString(),
+    });
+    router.push(`/payment?${searchParams.toString()}`);
+  }, [child, router]);
+
+  // Handle share button click
+  const handleShare = useCallback(async () => {
+    if (!child) return;
+    const shareUrl = `${window.location.origin}/children/${child.id}`;
+    const shareText = `Hãy cùng đỡ đầu em ${child.name} - ${child.district}, ${
+      child.province
+    }. Chỉ ${child.monthlySupport.toLocaleString(
+      "vi-VN"
+    )} VNĐ/tháng để thay đổi cuộc đời một em nhỏ.`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Nuôi Em - ${child.name}`,
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (err) {
+        // User cancelled or share failed
+        if ((err as Error).name !== "AbortError") {
+          console.error("Share failed:", err);
+        }
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+        toast.success("Đã sao chép liên kết!");
+      } catch {
+        toast.error("Không thể sao chép liên kết");
+      }
+    }
+  }, [child]);
 
   if (!child) {
     notFound();
@@ -305,6 +352,7 @@ export default function ChildDetailPage() {
                 ) : (
                   <>
                     <Button
+                      onClick={handleSponsor}
                       className={cn(
                         "w-full rounded-xl h-12 text-lg font-bold mb-4",
                         "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600",
@@ -322,6 +370,7 @@ export default function ChildDetailPage() {
 
                     <div className="border-t border-gray-100 pt-4">
                       <Button
+                        onClick={handleShare}
                         variant="ghost"
                         className="w-full justify-center text-gray-600 hover:text-amber-600 hover:cursor-pointer"
                       >

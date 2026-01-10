@@ -16,6 +16,7 @@ The Relayer API provides blockchain integration services for converting fiat (VN
   - [Health Check](#health-check)
   - [Auth Endpoints](#auth-endpoints)
   - [Payment Endpoints](#payment-endpoints)
+  - [Impact Endpoints](#impact-endpoints)
   - [Webhook Endpoints](#webhook-endpoints)
 - [Response Formats](#response-formats)
 - [Error Codes](#error-codes)
@@ -45,6 +46,7 @@ The following endpoints do **not** require authentication:
 - `GET /api/payment/vnpay-return`
 - `GET /api/payment/vnpay-ipn`
 - `GET /api/payment/rate`
+- `POST /api/v1/impact/proof/ipfs-url`
 - `GET /api/webhook/health`
 
 ---
@@ -58,6 +60,11 @@ The following endpoints do **not** require authentication:
 Check if the API server is running.
 
 **Authentication:** None
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3000/health
+```
 
 **Response:**
 ```json
@@ -81,7 +88,27 @@ Register or login a user with Web3Auth credentials.
 
 **Authentication:** Required (Web3Auth JWT)
 
-**Request Body:** None (data extracted from JWT)
+**Request Body:**
+```json
+{
+  "walletAddress": "0x1234567890abcdef1234567890abcdef12345678"
+}
+```
+
+**Parameters:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `walletAddress` | string | Yes | Ethereum wallet address from Web3Auth provider |
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_WEB3AUTH_JWT_TOKEN" \
+  -d '{
+    "walletAddress": "0x1234567890abcdef1234567890abcdef12345678"
+  }'
+```
 
 **Response:**
 ```json
@@ -107,6 +134,12 @@ Register or login a user with Web3Auth credentials.
 Get the current authenticated user's profile.
 
 **Authentication:** Required (Web3Auth JWT)
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3000/api/auth/me \
+  -H "Authorization: Bearer YOUR_WEB3AUTH_JWT_TOKEN"
+```
 
 **Response:**
 ```json
@@ -142,6 +175,18 @@ Create a VNPay payment URL for purchasing tokens with VND.
   "bankCode": "NCB",
   "language": "vn"
 }
+```
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/payment/create \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_WEB3AUTH_JWT_TOKEN" \
+  -d '{
+    "amount": 100000,
+    "bankCode": "NCB",
+    "language": "vn"
+  }'
 ```
 
 **Parameters:**
@@ -199,6 +244,8 @@ VNPay return URL handler (user redirect after payment).
 
 **Note:** This endpoint is called by VNPay and the user's browser. Do not call directly.
 
+**cURL Example:** ⚠️ Not recommended - This endpoint should only be called by VNPay.
+
 ---
 
 #### `GET /api/payment/vnpay-ipn`
@@ -224,6 +271,8 @@ VNPay IPN (Instant Payment Notification) handler for server-to-server notificati
 
 **Note:** This endpoint is called by VNPay servers. Do not call directly. It triggers the blockchain transaction processing.
 
+**cURL Example:** ⚠️ Not recommended - This endpoint should only be called by VNPay servers.
+
 ---
 
 #### `GET /api/payment/transactions`
@@ -240,6 +289,17 @@ Get the authenticated user's transaction history.
 **Example Request:**
 ```
 GET /api/payment/transactions?limit=20
+```
+
+**cURL Example:**
+```bash
+# Get all transactions
+curl -X GET http://localhost:3000/api/payment/transactions \
+  -H "Authorization: Bearer YOUR_WEB3AUTH_JWT_TOKEN"
+
+# Get limited transactions
+curl -X GET "http://localhost:3000/api/payment/transactions?limit=20" \
+  -H "Authorization: Bearer YOUR_WEB3AUTH_JWT_TOKEN"
 ```
 
 **Response:**
@@ -292,6 +352,12 @@ Get the status of a specific order.
 GET /api/payment/order/20260110120000_0x1234...5678
 ```
 
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3000/api/payment/order/20260110120000_0x1234...5678 \
+  -H "Authorization: Bearer YOUR_WEB3AUTH_JWT_TOKEN"
+```
+
 **Response:**
 ```json
 {
@@ -319,6 +385,11 @@ Get the current VND to token conversion rate.
 
 **Authentication:** None (Public)
 
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3000/api/payment/rate
+```
+
 **Response:**
 ```json
 {
@@ -336,6 +407,159 @@ Get the current VND to token conversion rate.
 
 ---
 
+### Impact Endpoints
+
+#### `POST /api/v1/impact/proof`
+
+Submit proof of impact (image) to IPFS and record on blockchain.
+
+**Authentication:** Required (Web3Auth JWT)
+
+**Request Body:** `multipart/form-data`
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `image` | File | Yes | Image file (JPEG, PNG, WebP, max 5MB) |
+| `campaignId` | number | Yes | Campaign identifier (positive integer) |
+| `description` | string | No | Description of the proof |
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/v1/impact/proof \
+  -H "Authorization: Bearer YOUR_WEB3AUTH_JWT_TOKEN" \
+  -F "image=@/path/to/meal_receipt.jpg" \
+  -F "campaignId=1" \
+  -F "description=Meals delivered to 10 families in District 1"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "ipfsUrl": "https://gateway.pinata.cloud/ipfs/QmXxxx...",
+  "txHash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+  "explorerUrl": "https://explorer.sepolia.mantle.xyz/tx/0x1234567890abcdef...",
+  "cid": "QmXxxx..."
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Invalid input (missing file, invalid campaignId)
+- `401 Unauthorized`: Invalid or missing JWT token
+- `503 Service Unavailable`: IPFS service temporarily unavailable
+- `502 Bad Gateway`: Blockchain service temporarily unavailable
+- `500 Internal Server Error`: Server error
+
+---
+
+#### `GET /api/v1/impact/campaign/:campaignId/proofs`
+
+Retrieve all proofs submitted for a specific campaign from the blockchain.
+
+**Authentication:** Required (Web3Auth JWT)
+
+**Path Parameters:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `campaignId` | number | Yes | Campaign identifier (positive integer) |
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3000/api/v1/impact/campaign/1/proofs \
+  -H "Authorization: Bearer YOUR_WEB3AUTH_JWT_TOKEN"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "campaignId": 1,
+  "proofs": [
+    "QmXxxx...",
+    "QmYyyy...",
+    "QmZzzz..."
+  ]
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Invalid campaignId
+- `401 Unauthorized`: Invalid or missing JWT token
+- `500 Internal Server Error`: Failed to retrieve proofs
+
+---
+
+#### `POST /api/v1/impact/proof/ipfs-url`
+
+Generate IPFS gateway URLs from a CID (useful if primary gateway is down).
+
+**Authentication:** None (Public)
+
+**Request Body:**
+```json
+{
+  "cid": "QmXxxx..."
+}
+```
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/v1/impact/proof/ipfs-url \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cid": "QmXxxx..."
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "primary": "https://gateway.pinata.cloud/ipfs/QmXxxx...",
+    "alternatives": [
+      "https://gateway.pinata.cloud/ipfs/QmXxxx...",
+      "https://ipfs.io/ipfs/QmXxxx...",
+      "https://QmXxxx....ipfs.w3s.link/"
+    ]
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Invalid CID
+- `500 Internal Server Error`: Failed to generate URLs
+
+---
+
+#### `GET /api/v1/impact/relayer/balance`
+
+Check the relayer wallet balance on Mantle network (for monitoring purposes).
+
+**Authentication:** Required (Web3Auth JWT)
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3000/api/v1/impact/relayer/balance \
+  -H "Authorization: Bearer YOUR_WEB3AUTH_JWT_TOKEN"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "balance": "1.5234",
+    "address": "0x1234567890abcdef1234567890abcdef12345678"
+  }
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized`: Invalid or missing JWT token
+- `500 Internal Server Error`: Failed to retrieve balance
+
+---
+
 ### Webhook Endpoints
 
 #### `GET /api/webhook/health`
@@ -343,6 +567,11 @@ Get the current VND to token conversion rate.
 Health check endpoint for webhook monitoring.
 
 **Authentication:** None
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3000/api/webhook/health
+```
 
 **Response:**
 ```json
@@ -356,6 +585,75 @@ Health check endpoint for webhook monitoring.
 ```
 
 ---
+
+## Quick Testing Script
+
+Here's a bash script to test all public endpoints:
+
+```bash
+#!/bin/bash
+
+# Configuration
+API_URL="http://localhost:3000"
+JWT_TOKEN="YOUR_WEB3AUTH_JWT_TOKEN"
+
+echo "Testing Public Endpoints..."
+echo "=============================="
+
+# Health Check
+echo -e "\n1. Health Check:"
+curl -X GET "$API_URL/health"
+
+# Payment Rate
+echo -e "\n\n2. Payment Rate:"
+curl -X GET "$API_URL/api/payment/rate"
+
+# Webhook Health
+echo -e "\n\n3. Webhook Health:"
+curl -X GET "$API_URL/api/webhook/health"
+
+# IPFS URL Generator
+echo -e "\n\n4. IPFS URL Generator:"
+curl -X POST "$API_URL/api/v1/impact/proof/ipfs-url" \
+  -H "Content-Type: application/json" \
+  -d '{"cid": "QmTest123"}'
+
+echo -e "\n\nTesting Protected Endpoints (JWT Required)..."
+echo "==============================================="
+
+# Auth - Me
+echo -e "\n5. Get User Profile:"
+curl -X GET "$API_URL/api/auth/me" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+
+# Payment - Transactions
+echo -e "\n\n6. Get Transactions:"
+curl -X GET "$API_URL/api/payment/transactions?limit=5" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+
+# Impact - Campaign Proofs
+echo -e "\n\n7. Get Campaign Proofs:"
+curl -X GET "$API_URL/api/v1/impact/campaign/1/proofs" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+
+# Impact - Relayer Balance
+echo -e "\n\n8. Get Relayer Balance:"
+curl -X GET "$API_URL/api/v1/impact/relayer/balance" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+
+echo -e "\n\nDone!"
+```
+
+**Usage:**
+```bash
+# Save as test_api.sh
+chmod +x test_api.sh
+./test_api.sh
+```
+
+---
+
+**Last Updated:** January 11
 
 ## Response Formats
 
