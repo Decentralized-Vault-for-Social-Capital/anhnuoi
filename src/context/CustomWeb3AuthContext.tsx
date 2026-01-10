@@ -59,10 +59,12 @@ interface Web3AuthContextValue {
   isInitialized: boolean;
   isLoading: boolean;
   userInfo: Partial<UserInfo> | null;
+  address: string | null;
   connect: (loginProvider?: string) => Promise<IProvider | null>;
   connectWithModal: () => Promise<IProvider | null>;
   disconnect: () => Promise<void>;
   getUserInfo: () => Promise<Partial<UserInfo> | null>;
+  getAddress: () => Promise<string | null>;
 }
 
 // Default context value
@@ -73,10 +75,12 @@ const defaultContextValue: Web3AuthContextValue = {
   isInitialized: false,
   isLoading: false,
   userInfo: null,
+  address: null,
   connect: async () => null,
   connectWithModal: async () => null,
   disconnect: async () => {},
   getUserInfo: async () => null,
+  getAddress: async () => null,
 };
 
 // Context
@@ -91,6 +95,7 @@ export function Web3AuthContextProvider({ children }: { children: ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [userInfo, setUserInfo] = useState<Partial<UserInfo> | null>(null);
+  const [address, setAddress] = useState<string | null>(null);
 
   // Initialize Web3Auth
   useEffect(() => {
@@ -112,6 +117,16 @@ export function Web3AuthContextProvider({ children }: { children: ReactNode }) {
             uxMode: "popup",
             loginMethodsOrder: ["email_passwordless", "google", "facebook"],
           },
+          // Configure auth connection IDs for login methods
+          // connectorSettings: {
+          //   auth: {
+          //     loginMethods: {
+          //       email_passwordless: {
+          //         authConnectionId: "anh-nuoi",
+          //       },
+          //     },
+          //   },
+          // },
         });
 
         console.log("Web3Auth Modal instance created, initializing...");
@@ -156,9 +171,24 @@ export function Web3AuthContextProvider({ children }: { children: ReactNode }) {
         if (web3AuthInstance.connected && web3AuthInstance.provider) {
           setProvider(web3AuthInstance.provider);
           setIsConnected(true);
+
+          // Get address from provider
+          try {
+            const accounts = (await web3AuthInstance.provider.request({
+              method: "eth_accounts",
+            })) as string[];
+            if (accounts && accounts.length > 0) {
+              setAddress(accounts[0]);
+              console.log("Restored address:", accounts[0]);
+            }
+          } catch (e) {
+            console.log("Could not get address:", e);
+          }
+
           try {
             const info = await web3AuthInstance.getUserInfo();
             setUserInfo(info);
+            console.log("Restored user info:", info);
           } catch (e) {
             console.log("Could not get user info:", e);
           }
@@ -171,6 +201,25 @@ export function Web3AuthContextProvider({ children }: { children: ReactNode }) {
 
     initWeb3Auth();
   }, []);
+
+  // Helper function to get address from provider
+  const fetchAddress = useCallback(
+    async (web3authProvider: IProvider): Promise<string | null> => {
+      try {
+        const accounts = (await web3authProvider.request({
+          method: "eth_accounts",
+        })) as string[];
+        if (accounts && accounts.length > 0) {
+          return accounts[0];
+        }
+        return null;
+      } catch (e) {
+        console.error("Failed to get address:", e);
+        return null;
+      }
+    },
+    []
+  );
 
   // Connect with Modal UI
   const connectWithModal = useCallback(async (): Promise<IProvider | null> => {
@@ -188,9 +237,17 @@ export function Web3AuthContextProvider({ children }: { children: ReactNode }) {
         setProvider(web3authProvider);
         setIsConnected(true);
 
+        // Get address from provider
+        const addr = await fetchAddress(web3authProvider);
+        if (addr) {
+          setAddress(addr);
+          console.log("Connected address:", addr);
+        }
+
         try {
           const info = await web3Auth.getUserInfo();
           setUserInfo(info);
+          console.log("User info:", info);
         } catch (e) {
           console.log("Could not get user info after connect:", e);
         }
@@ -203,7 +260,7 @@ export function Web3AuthContextProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [web3Auth]);
+  }, [web3Auth, fetchAddress]);
 
   // Connect directly with a specific provider (no-modal style using connectTo)
   const connect = useCallback(
@@ -258,9 +315,17 @@ export function Web3AuthContextProvider({ children }: { children: ReactNode }) {
           setProvider(web3authProvider);
           setIsConnected(true);
 
+          // Get address from provider
+          const addr = await fetchAddress(web3authProvider);
+          if (addr) {
+            setAddress(addr);
+            console.log("Connected address:", addr);
+          }
+
           try {
             const info = await web3Auth.getUserInfo();
             setUserInfo(info);
+            console.log("User info:", info);
           } catch (e) {
             console.log("Could not get user info after connect:", e);
           }
@@ -274,7 +339,7 @@ export function Web3AuthContextProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
       }
     },
-    [web3Auth]
+    [web3Auth, fetchAddress]
   );
 
   // Disconnect function
@@ -290,6 +355,7 @@ export function Web3AuthContextProvider({ children }: { children: ReactNode }) {
       setProvider(null);
       setIsConnected(false);
       setUserInfo(null);
+      setAddress(null);
     } catch (error) {
       console.error("Disconnect error:", error);
     } finally {
@@ -314,6 +380,18 @@ export function Web3AuthContextProvider({ children }: { children: ReactNode }) {
       }
     }, [web3Auth, isConnected]);
 
+  // Get address function
+  const getAddress = useCallback(async (): Promise<string | null> => {
+    if (!provider) {
+      return null;
+    }
+    const addr = await fetchAddress(provider);
+    if (addr) {
+      setAddress(addr);
+    }
+    return addr;
+  }, [provider, fetchAddress]);
+
   const contextValue: Web3AuthContextValue = {
     web3Auth,
     provider,
@@ -321,10 +399,12 @@ export function Web3AuthContextProvider({ children }: { children: ReactNode }) {
     isInitialized,
     isLoading,
     userInfo,
+    address,
     connect,
     connectWithModal,
     disconnect,
     getUserInfo,
+    getAddress,
   };
 
   return (

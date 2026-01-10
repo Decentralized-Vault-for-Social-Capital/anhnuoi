@@ -13,7 +13,6 @@
 import { useCallback, useEffect } from "react";
 import { useAtom } from "jotai";
 import { useWeb3AuthContext } from "@/context/CustomWeb3AuthContext";
-import { useAccount } from "wagmi";
 import { api } from "@/lib/api";
 import {
   tokenAtom,
@@ -39,14 +38,15 @@ export function useAuth() {
     isInitialized,
     isLoading: web3AuthLoading,
     userInfo,
+    address: web3AuthAddress,
     connect: web3AuthConnect,
     connectWithModal: web3AuthConnectWithModal,
     disconnect: web3AuthDisconnect,
     getUserInfo,
   } = useWeb3AuthContext();
 
-  // Wagmi account
-  const { address } = useAccount();
+  // Use Web3Auth address instead of wagmi
+  const address = web3AuthAddress;
 
   /**
    * Get JWT token from Web3Auth
@@ -90,7 +90,7 @@ export function useAuth() {
       setError(null);
 
       try {
-        const result = await api.auth.login(walletAddress);
+        const result = await api.auth.login(walletAddress, jwtToken);
 
         if (result.success) {
           setUser(result.data);

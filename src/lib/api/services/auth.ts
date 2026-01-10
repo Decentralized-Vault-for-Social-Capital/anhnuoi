@@ -8,12 +8,18 @@ import type { ApiResult, LoginResponse, MeResponse } from "../types";
 /**
  * Login or register user with Web3Auth credentials
  * @param walletAddress - User's wallet address from Web3Auth
+ * @param token - Web3Auth JWT token for authentication
  * @returns User data including wallet address, email, and name
  */
 export async function login(
-  walletAddress: string
+  walletAddress: string,
+  token: string
 ): Promise<ApiResult<LoginResponse>> {
-  return apiClient.post<LoginResponse>("/api/auth/login", { walletAddress });
+  return apiClient.post<LoginResponse>(
+    "/api/auth/login",
+    { walletAddress },
+    token
+  );
 }
 
 /**

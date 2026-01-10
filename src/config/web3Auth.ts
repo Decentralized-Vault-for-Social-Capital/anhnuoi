@@ -15,6 +15,9 @@ import { env } from "@/config/env";
 
 export const clientId = env.web3AuthClientId || "";
 
+// Determine if we're in production
+const isProduction = process.env.NODE_ENV === "production";
+
 // Chain configuration for Web3Auth
 export const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
@@ -34,7 +37,10 @@ export const privateKeyProvider = new EthereumPrivateKeyProvider({
 
 export const web3AuthOptions: Web3AuthOptions = {
   clientId,
-  web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
+  // Use SAPPHIRE_MAINNET for production, SAPPHIRE_DEVNET for development
+  web3AuthNetwork: isProduction
+    ? WEB3AUTH_NETWORK.SAPPHIRE_MAINNET
+    : WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
   //   privateKeyProvider: privateKeyProvider as any,
   uiConfig: {
     appName: "Nuôi Em",

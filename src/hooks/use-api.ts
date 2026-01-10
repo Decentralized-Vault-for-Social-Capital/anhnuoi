@@ -51,11 +51,11 @@ export function useAuth() {
   const state = useApiState<User>();
 
   const login = useCallback(
-    async (token: string) => {
+    async (walletAddress: string, token: string) => {
       state.setLoading(true);
       state.setError(null);
 
-      const result = await api.auth.login(token);
+      const result = await api.auth.login(walletAddress, token);
 
       if (result.success) {
         state.setData(result.data);

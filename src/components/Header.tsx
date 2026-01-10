@@ -10,8 +10,19 @@ import Image from "next/image";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { login, logout, isLoading, isAuthenticated, user, userInfo, address } =
-    useAuth();
+  const {
+    login,
+    logout,
+    isLoading,
+    isAuthenticated,
+    isConnected,
+    user,
+    userInfo,
+    address,
+  } = useAuth();
+
+  // Show as authenticated if Web3Auth is connected OR if API auth completed
+  const showAsLoggedIn = isConnected || isAuthenticated;
 
   // Handle scroll effect
   useEffect(() => {
@@ -26,9 +37,11 @@ const Header = () => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
+  // Show email, name, or truncated address
   const displayName =
-    user?.name ||
+    userInfo?.email ||
     userInfo?.name ||
+    user?.name ||
     (address && truncateAddress(address)) ||
     "User";
 
@@ -80,7 +93,7 @@ const Header = () => {
 
           {/* Connect Wallet Button */}
           <div className="hidden md:flex items-center gap-4">
-            {isAuthenticated ? (
+            {showAsLoggedIn ? (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 px-4 py-2 bg-[#EDE8DC] rounded-xl border border-[#E5E1D8]">
                   {userInfo?.profileImage ? (
@@ -160,7 +173,7 @@ const Header = () => {
                 Danh sách em
               </Link>
               <div className="pt-4 mt-2 border-t border-[#E5E1D8]">
-                {isAuthenticated ? (
+                {showAsLoggedIn ? (
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-3 px-4 py-3 bg-[#EDE8DC] rounded-xl">
                       {userInfo?.profileImage ? (
@@ -191,7 +204,7 @@ const Header = () => {
                 ) : (
                   <Button
                     onClick={() => login()}
-                    className="w-full bg-[#C25E44] hover:bg-[#A14D38] text-white font-bold rounded-xl border-2 border-[#C25E44]"
+                    className="w-full bg-[#C25E44] hover:bg-[#A14D38] text-white font-bold rounded-xl border-2 border-[#C25E44] hover:cursor-pointer"
                     disabled={isLoading}
                   >
                     {isLoading ? "Đang kết nối..." : "Đăng nhập"}
