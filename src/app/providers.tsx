@@ -12,11 +12,10 @@ import {
   ledgerWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider, http, createConfig } from "wagmi";
+import { WagmiProvider } from "wagmi";
 import { Provider as JotaiProvider } from "jotai";
 import Header from "@/components/Header";
-import { Web3AuthProvider } from "@web3auth/modal/react";
-import web3AuthContextConfig from "@/context/web3authContext";
+import { Web3AuthContextProvider } from "@/context/CustomWeb3AuthContext";
 import { sepolia } from "wagmi/chains";
 
 const { wallets } = getDefaultWallets();
@@ -41,7 +40,7 @@ const queryClient = new QueryClient();
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <JotaiProvider>
-      <Web3AuthProvider config={web3AuthContextConfig}>
+      <Web3AuthContextProvider>
         <WagmiProvider config={config}>
           <QueryClientProvider client={queryClient}>
             <RainbowKitProvider>
@@ -50,7 +49,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             </RainbowKitProvider>
           </QueryClientProvider>
         </WagmiProvider>
-      </Web3AuthProvider>
+      </Web3AuthContextProvider>
     </JotaiProvider>
   );
 }

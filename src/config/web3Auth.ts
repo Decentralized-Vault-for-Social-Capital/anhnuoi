@@ -35,11 +35,11 @@ export const privateKeyProvider = new EthereumPrivateKeyProvider({
 export const web3AuthOptions: Web3AuthOptions = {
   clientId,
   web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
-  privateKeyProvider: privateKeyProvider as any, // Type cast to avoid version mismatch
+  //   privateKeyProvider: privateKeyProvider as any,
   uiConfig: {
     appName: "Nuôi Em",
     theme: {
-      primary: "#C25E44", // Terracotta color
+      primary: "#C25E44",
     },
     mode: "light",
     logoLight: "https://web3auth.io/images/web3authlog.png",
@@ -47,6 +47,7 @@ export const web3AuthOptions: Web3AuthOptions = {
     defaultLanguage: "en",
     loginGridCol: 3,
     primaryButton: "socialLogin",
+    uxMode: "popup", // Ensure popup mode
   },
 };
 

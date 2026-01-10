@@ -12,12 +12,7 @@
 
 import { useCallback, useEffect } from "react";
 import { useAtom } from "jotai";
-import {
-  useWeb3AuthConnect,
-  useWeb3AuthDisconnect,
-  useWeb3AuthUser,
-  useWeb3Auth,
-} from "@web3auth/modal/react";
+import { useWeb3AuthContext } from "@/context/CustomWeb3AuthContext";
 import { useAccount } from "wagmi";
 import { api } from "@/lib/api";
 import {
@@ -37,15 +32,18 @@ export function useAuth() {
   const [error, setError] = useAtom(authErrorAtom);
   const [isAuthenticated] = useAtom(isAuthenticatedAtom);
 
-  // Web3Auth hooks
+  // Custom Web3Auth context
   const {
-    connect,
+    web3Auth,
     isConnected,
-    loading: connectLoading,
-  } = useWeb3AuthConnect();
-  const { disconnect, loading: disconnectLoading } = useWeb3AuthDisconnect();
-  const { userInfo } = useWeb3AuthUser();
-  const web3auth = useWeb3Auth();
+    isInitialized,
+    isLoading: web3AuthLoading,
+    userInfo,
+    connect: web3AuthConnect,
+    connectWithModal: web3AuthConnectWithModal,
+    disconnect: web3AuthDisconnect,
+    getUserInfo,
+  } = useWeb3AuthContext();
 
   // Wagmi account
   const { address } = useAccount();
@@ -55,13 +53,13 @@ export function useAuth() {
    */
   const getIdToken = useCallback(async (): Promise<string | null> => {
     try {
-      if (!web3auth.web3Auth) {
+      if (!web3Auth) {
         console.warn("Web3Auth not initialized");
         return null;
       }
 
       // Use getUserInfo method for getting user data including idToken
-      const userAuthInfo = await web3auth.web3Auth.getUserInfo();
+      const userAuthInfo = await web3Auth.getUserInfo();
 
       // Check if idToken is available from user info
       if (userAuthInfo?.idToken) {
@@ -70,7 +68,7 @@ export function useAuth() {
 
       // Fallback: Try to get session ID from Web3Auth instance
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const web3AuthInstance = web3auth.web3Auth as any;
+      const web3AuthInstance = web3Auth as any;
       if (web3AuthInstance.sessionId) {
         return web3AuthInstance.sessionId;
       }
@@ -81,7 +79,7 @@ export function useAuth() {
       console.error("Failed to get ID token:", err);
       return null;
     }
-  }, [web3auth]);
+  }, [web3Auth]);
 
   /**
    * Login to API with wallet address
@@ -141,8 +139,9 @@ export function useAuth() {
     setError(null);
 
     try {
-      // Step 1: Connect with Web3Auth
-      await connect();
+      // Step 1: Connect with Web3Auth Modal (shows login options)
+      // Using connectWithModal instead of direct connectTo for better v10 compatibility
+      await web3AuthConnectWithModal();
 
       // Note: The actual API login happens in the useEffect
       // when isConnected becomes true
@@ -157,7 +156,7 @@ export function useAuth() {
       // The useEffect will set it again if needed for API login
       setIsLoading(false);
     }
-  }, [connect, setError, setIsLoading]);
+  }, [web3AuthConnectWithModal, setError, setIsLoading]);
 
   /**
    * Full logout flow: Clear state -> Disconnect Web3Auth
@@ -172,13 +171,13 @@ export function useAuth() {
       setError(null);
 
       // Disconnect from Web3Auth
-      await disconnect();
+      await web3AuthDisconnect();
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [disconnect, setUser, setToken, setError, setIsLoading]);
+  }, [web3AuthDisconnect, setUser, setToken, setError, setIsLoading]);
 
   /**
    * Refresh token and re-authenticate
@@ -195,16 +194,16 @@ export function useAuth() {
   }, [isConnected, getIdToken, setToken, fetchCurrentUser]);
 
   /**
-   * Effect: Reset loading state when Web3Auth connect loading finishes
+   * Effect: Reset loading state when Web3Auth loading finishes
    * This handles the case where modal is closed without completing login
    */
   useEffect(() => {
-    // When connectLoading becomes false and user is not connected,
+    // When web3AuthLoading becomes false and user is not connected,
     // ensure our loading state is also reset
-    if (!connectLoading && !isConnected && isLoading) {
+    if (!web3AuthLoading && !isConnected && isLoading) {
       setIsLoading(false);
     }
-  }, [connectLoading, isConnected, isLoading, setIsLoading]);
+  }, [web3AuthLoading, isConnected, isLoading, setIsLoading]);
 
   /**
    * Effect: Handle Web3Auth connection state changes
@@ -286,13 +285,14 @@ export function useAuth() {
     user,
     token,
     isAuthenticated,
-    isLoading: isLoading || connectLoading || disconnectLoading,
+    isLoading: isLoading || web3AuthLoading,
     error,
 
     // Web3Auth info
     userInfo,
     address,
     isConnected,
+    isInitialized,
 
     // Actions
     login,
