@@ -80,13 +80,120 @@ export default function Home() {
               </p>
             </div>
             <div className="relative">
-              <Image
-                src="/anhnuoi/nuoi_em_5.jpeg"
-                alt="Bữa cơm của các em"
-                width={600}
-                height={450}
-                className="w-full"
-              />
+              {/* Decorative dots */}
+              <div className="absolute -top-4 -right-4 w-3 h-3 rounded-full bg-orange-400" />
+              <div className="absolute -top-2 right-12 w-2 h-2 rounded-full bg-cyan-400" />
+              <div className="absolute top-8 -right-6 w-2 h-2 rounded-full bg-green-500" />
+              <div className="absolute -bottom-4 -left-4 w-3 h-3 rounded-full bg-red-500" />
+              <div className="absolute -bottom-2 left-16 w-2 h-2 rounded-full bg-yellow-400" />
+              <div className="absolute bottom-12 -left-6 w-2 h-2 rounded-full bg-blue-500" />
+              <div className="absolute top-1/2 -right-5 w-2 h-2 rounded-full bg-pink-500" />
+              <div className="absolute top-1/3 -left-5 w-2 h-2 rounded-full bg-purple-500" />
+
+              {/* Diagonal sliced image container */}
+              <div className="relative w-full aspect-[4/3] overflow-visible">
+                <div
+                  className="relative w-full h-full"
+                  style={{ transform: "rotate(-8deg)" }}
+                >
+                  {/* Slice 1 */}
+                  <div
+                    className="absolute w-full overflow-hidden rounded-full"
+                    style={{
+                      height: "22%",
+                      top: "0%",
+                      clipPath: "inset(0 0 0 0 round 9999px)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        transform: "rotate(8deg) scale(1.2)",
+                        transformOrigin: "center",
+                      }}
+                      className="w-full h-[500%] relative -top-0"
+                    >
+                      <Image
+                        src="/anhnuoi/nuoi_em_5.jpeg"
+                        alt="Bữa cơm của các em"
+                        fill
+                        className="object-cover object-top"
+                      />
+                    </div>
+                  </div>
+                  {/* Slice 2 */}
+                  <div
+                    className="absolute w-full overflow-hidden rounded-full"
+                    style={{
+                      height: "22%",
+                      top: "26%",
+                      clipPath: "inset(0 0 0 0 round 9999px)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        transform: "rotate(8deg) scale(1.2)",
+                        transformOrigin: "center",
+                      }}
+                      className="w-full h-[500%] relative -top-[130%]"
+                    >
+                      <Image
+                        src="/anhnuoi/nuoi_em_5.jpeg"
+                        alt="Bữa cơm của các em"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </div>
+                  {/* Slice 3 */}
+                  <div
+                    className="absolute w-full overflow-hidden rounded-full"
+                    style={{
+                      height: "22%",
+                      top: "52%",
+                      clipPath: "inset(0 0 0 0 round 9999px)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        transform: "rotate(8deg) scale(1.2)",
+                        transformOrigin: "center",
+                      }}
+                      className="w-full h-[500%] relative -top-[260%]"
+                    >
+                      <Image
+                        src="/anhnuoi/nuoi_em_5.jpeg"
+                        alt="Bữa cơm của các em"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </div>
+                  {/* Slice 4 */}
+                  <div
+                    className="absolute w-full overflow-hidden rounded-full"
+                    style={{
+                      height: "22%",
+                      top: "78%",
+                      clipPath: "inset(0 0 0 0 round 9999px)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        transform: "rotate(8deg) scale(1.2)",
+                        transformOrigin: "center",
+                      }}
+                      className="w-full h-[500%] relative -top-[390%]"
+                    >
+                      <Image
+                        src="/anhnuoi/nuoi_em_5.jpeg"
+                        alt="Bữa cơm của các em"
+                        fill
+                        className="object-cover object-bottom"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

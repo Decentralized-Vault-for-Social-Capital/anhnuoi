@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Anhnuoi",
+  title: "Anh Nuôi",
   description: "Decentralized charity protocol",
 };
 
