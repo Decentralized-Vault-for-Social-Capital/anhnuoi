@@ -19,7 +19,7 @@ export default function ChildNotFound() {
           trong hệ thống.
         </p>
         <Link href="/children">
-          <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-full px-6">
+          <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-full px-6 hover:cursor-pointer">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Xem danh sách các em nhỏ
           </Button>

@@ -158,13 +158,16 @@ function PaymentResultContent() {
             {/* Actions */}
             <div className="pt-4 space-y-3">
               <Link href="/children" className="block">
-                <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl">
+                <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl hover:cursor-pointer">
                   Tiếp tục đỡ đầu
                 </Button>
               </Link>
 
               <Link href="/" className="block">
-                <Button variant="outline" className="w-full rounded-xl">
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl hover:cursor-pointer"
+                >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Về trang chủ
                 </Button>

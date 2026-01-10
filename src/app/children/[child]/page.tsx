@@ -296,7 +296,7 @@ export default function ChildDetailPage() {
                     <Link href="/children">
                       <Button
                         variant="outline"
-                        className="w-full rounded-xl border-amber-300 text-amber-600 hover:bg-amber-50"
+                        className="w-full rounded-xl border-amber-300 text-amber-600 hover:bg-amber-50 hover:cursor-pointer"
                       >
                         Xem các em khác
                       </Button>
@@ -308,7 +308,8 @@ export default function ChildDetailPage() {
                       className={cn(
                         "w-full rounded-xl h-12 text-lg font-bold mb-4",
                         "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600",
-                        "text-white shadow-lg hover:shadow-xl transition-all"
+                        "text-white shadow-lg hover:shadow-xl transition-all",
+                        "hover:cursor-pointer"
                       )}
                     >
                       <Heart className="w-5 h-5 mr-2" />
@@ -322,7 +323,7 @@ export default function ChildDetailPage() {
                     <div className="border-t border-gray-100 pt-4">
                       <Button
                         variant="ghost"
-                        className="w-full justify-center text-gray-600 hover:text-amber-600"
+                        className="w-full justify-center text-gray-600 hover:text-amber-600 hover:cursor-pointer"
                       >
                         <Share2 className="w-4 h-4 mr-2" />
                         Chia sẻ câu chuyện

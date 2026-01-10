@@ -19,7 +19,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Nuôi Em - Bữa cơm níu chân trẻ tới trường",
+  title: "Anh Nuoi - Bữa cơm níu chân trẻ tới trường",
   description:
     "Dự án từ thiện phi tập trung, mang bữa cơm trưa đến cho trẻ em vùng cao Việt Nam. Minh bạch, tin cậy với công nghệ blockchain.",
 };

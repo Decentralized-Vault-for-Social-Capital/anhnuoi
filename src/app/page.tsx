@@ -138,7 +138,7 @@ export default function Home() {
                 <Button
                   onClick={handleAction}
                   size="lg"
-                  className="bg-[#C25E44] hover:bg-[#A14D38] text-white font-bold text-base px-8 py-6 rounded-xl border-2 border-[#C25E44] hover:border-[#A14D38] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                  className="bg-[#C25E44] hover:bg-[#A14D38] text-white font-bold text-base px-8 py-6 rounded-xl border-2 border-[#C25E44] hover:border-[#A14D38] transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]  hover:cursor-pointer"
                   disabled={isLoading}
                 >
                   {isAuthenticated
@@ -152,7 +152,7 @@ export default function Home() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="border-2 border-[#2D3A2E] text-[#2D3A2E] hover:bg-[#2D3A2E] hover:text-white font-bold text-base px-8 py-6 rounded-xl transition-all duration-200"
+                  className="border-2 border-[#2D3A2E] text-[#2D3A2E] hover:bg-[#2D3A2E] hover:text-white font-bold text-base px-8 py-6 rounded-xl transition-all duration-200 hover:cursor-pointer"
                   onClick={() =>
                     document
                       .getElementById("story")
@@ -202,6 +202,7 @@ export default function Home() {
                         src="/anhnuoi/nuoi_em_2.jpg"
                         alt="Trẻ em vùng cao"
                         fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-cover object-top"
                         priority
                       />
@@ -226,6 +227,7 @@ export default function Home() {
                         src="/anhnuoi/nuoi_em_2.jpg"
                         alt="Trẻ em vùng cao"
                         fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-cover"
                       />
                     </div>
@@ -249,6 +251,7 @@ export default function Home() {
                         src="/anhnuoi/nuoi_em_2.jpg"
                         alt="Trẻ em vùng cao"
                         fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-cover"
                       />
                     </div>
@@ -272,6 +275,7 @@ export default function Home() {
                         src="/anhnuoi/nuoi_em_2.jpg"
                         alt="Trẻ em vùng cao"
                         fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-cover object-bottom"
                       />
                     </div>
@@ -284,6 +288,7 @@ export default function Home() {
                     src="/anhnuoi/nuoi_em_2.jpg"
                     alt="Trẻ em vùng cao"
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover"
                   />
                   {/* Subtle gradient overlay */}
@@ -324,7 +329,14 @@ export default function Home() {
         {/* Scroll indicator */}
         <a
           href="#story"
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[#6B7280] hover:text-[#C25E44] transition-colors"
+          onClick={(e) => {
+            e.preventDefault();
+            document.getElementById("story")?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[#6B7280] hover:text-[#C25E44] transition-all duration-300 ease-out hover:translate-y-1 cursor-pointer"
         >
           <span className="text-xs uppercase tracking-wider">Khám phá</span>
           <ArrowDown className="w-5 h-5 animate-bounce" />
@@ -353,6 +365,7 @@ export default function Home() {
                       src="/anhnuoi/nuoi_em_5.jpeg"
                       alt="Bữa cơm của các em"
                       fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
                       className="object-cover"
                     />
                   </div>
@@ -377,6 +390,7 @@ export default function Home() {
                       src="/anhnuoi/nuoi_em_3.jpg"
                       alt="Trẻ em ăn cơm"
                       fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
                       className="object-cover"
                     />
                   </div>
@@ -596,7 +610,7 @@ export default function Home() {
           <Button
             onClick={handleAction}
             size="lg"
-            className="bg-white text-[#7D8A4E] hover:bg-white/90 font-bold text-base px-10 py-6 rounded-xl transition-all duration-200 hover:scale-[1.02]"
+            className="bg-white text-[#7D8A4E] hover:bg-white/90 font-bold text-base px-10 py-6 rounded-xl transition-all duration-200 hover:scale-[1.02] hover:cursor-pointer"
             disabled={isLoading}
           >
             {isAuthenticated ? "Nhận mã Nuôi Em" : "Bắt đầu ngay"}
@@ -623,6 +637,7 @@ export default function Home() {
                 src="/anhnuoi/nuoi_em_3.jpg"
                 alt="Trẻ em ăn cơm"
                 fill
+                sizes="(max-width: 768px) 100vw, 66vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -632,6 +647,7 @@ export default function Home() {
                 src="/anhnuoi/nuoi_em_4.jpg"
                 alt="Em cảm ơn"
                 fill
+                sizes="(max-width: 768px) 50vw, 33vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
             </div>
@@ -640,6 +656,7 @@ export default function Home() {
                 src="/anhnuoi/nuoi_em.jpg"
                 alt="Nuôi em"
                 fill
+                sizes="(max-width: 768px) 50vw, 33vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
             </div>
@@ -648,6 +665,7 @@ export default function Home() {
                 src="/anhnuoi/den_vau.jpg"
                 alt="Người sáng lập"
                 fill
+                sizes="(max-width: 768px) 100vw, 66vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -726,6 +744,7 @@ export default function Home() {
           src="/anhnuoi/nuoi_em_5.jpeg"
           alt="Các em nhỏ"
           fill
+          sizes="100vw"
           className="object-cover"
         />
         <div className="absolute inset-0 bg-[#2D3A2E]/80" />
@@ -759,7 +778,7 @@ export default function Home() {
           <Button
             onClick={handleAction}
             size="lg"
-            className="bg-[#C25E44] hover:bg-[#A14D38] text-white font-bold text-base px-10 py-6 rounded-xl border-2 border-[#C25E44] hover:border-[#A14D38] transition-all duration-200 hover:scale-[1.02]"
+            className="bg-[#C25E44] hover:bg-[#A14D38] text-white font-bold text-base px-10 py-6 rounded-xl border-2 border-[#C25E44] hover:border-[#A14D38] transition-all duration-200 hover:scale-[1.02] hover:cursor-pointer"
             disabled={isLoading}
           >
             {isAuthenticated ? "Nhận mã Nuôi Em" : "Bắt đầu ngay"}

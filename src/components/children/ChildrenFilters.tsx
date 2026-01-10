@@ -118,7 +118,7 @@ export function ChildrenFilters({ onFilterChange }: ChildrenFiltersProps) {
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 hover:cursor-pointer"
           >
             Xóa bộ lọc
           </Button>

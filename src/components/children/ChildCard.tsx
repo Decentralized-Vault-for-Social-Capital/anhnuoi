@@ -105,7 +105,7 @@ export function ChildCard({ child, className }: ChildCardProps) {
         <Link href={`/children/${child.id}`} className="block">
           <Button
             className={cn(
-              "w-full rounded-xl font-semibold transition-all duration-300",
+              "w-full rounded-xl font-semibold transition-all duration-300 hover:cursor-pointer",
               isSponsored
                 ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 : "bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white shadow-md hover:shadow-lg"

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Heart, LogOut, User, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import Image from "next/image";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -42,35 +43,36 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-xl bg-[#C25E44] flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-              <Heart className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-bold text-[#2D3A2E] font-[family-name:var(--font-montserrat)]">
-                Nuôi Em
-              </span>
-              <span className="text-xs text-[#6B7280] -mt-0.5">Anh Nuôi</span>
-            </div>
+          <Link
+            href="/"
+            className="flex items-center gap-3 group hover:scale-95 transition-transform duration-300 ease-out"
+          >
+            <Image
+              src="/logo.png"
+              alt="Ánh Nuôi Logo"
+              width={80}
+              height={80}
+              className="object-contain"
+            />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-24">
             <Link
               href="#story"
-              className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-sm"
+              className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-md"
             >
               Về dự án
             </Link>
             <Link
               href="#how-it-works"
-              className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-sm"
+              className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-md"
             >
               Cách thức
             </Link>
             <Link
               href="/children"
-              className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-sm"
+              className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-md"
             >
               Danh sách em
             </Link>
@@ -110,7 +112,7 @@ const Header = () => {
             ) : (
               <Button
                 onClick={() => login()}
-                className="bg-[#C25E44] hover:bg-[#A14D38] text-white font-bold rounded-xl px-6 border-2 border-[#C25E44] hover:border-[#A14D38] transition-all hover:scale-[1.02]"
+                className="bg-[#C25E44] hover:bg-[#A14D38] text-white font-bold rounded-xl px-6 border-2 border-[#C25E44] hover:border-[#A14D38] transition-all hover:scale-[1.02] hover:cursor-pointer"
                 disabled={isLoading}
               >
                 {isLoading ? "Đang kết nối..." : "Đăng nhập"}
