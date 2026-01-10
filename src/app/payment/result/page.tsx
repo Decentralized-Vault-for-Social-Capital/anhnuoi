@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApiWithAuth } from "@/hooks/useApiWithAuth";
 import type { TransactionStatus } from "@/lib/api/types";
 
-export default function PaymentResultPage() {
+function PaymentResultContent() {
   const searchParams = useSearchParams();
   const { isAuthenticated, token } = useAuth();
   const { getOrderStatus } = useApiWithAuth();
@@ -217,5 +217,28 @@ function StatusBadge({ status }: { status: TransactionStatus | null }) {
     >
       {config.label}
     </span>
+  );
+}
+
+function PaymentResultLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-white to-orange-50 flex items-center justify-center px-4 py-16">
+      <div className="max-w-md w-full">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden p-8">
+          <div className="flex flex-col items-center justify-center">
+            <Loader2 className="w-12 h-12 animate-spin text-amber-500 mb-4" />
+            <p className="text-gray-600">Đang tải kết quả thanh toán...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function PaymentResultPage() {
+  return (
+    <Suspense fallback={<PaymentResultLoading />}>
+      <PaymentResultContent />
+    </Suspense>
   );
 }
