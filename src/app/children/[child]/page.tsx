@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { mockChildren } from "@/lib/data/children";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/lib/i18n";
 
 const needIcons: Record<string, React.ReactNode> = {
   "Sách vở": <BookOpen className="w-4 h-4" />,
@@ -41,6 +42,7 @@ const needIcons: Record<string, React.ReactNode> = {
 export default function ChildDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { t, language } = useLanguage();
   const childId = params.child as string;
 
   const child = useMemo(() => {
@@ -62,11 +64,18 @@ export default function ChildDetailPage() {
   const handleShare = useCallback(async () => {
     if (!child) return;
     const shareUrl = `${window.location.origin}/children/${child.id}`;
-    const shareText = `Hãy cùng đỡ đầu em ${child.name} - ${child.district}, ${
-      child.province
-    }. Chỉ ${child.monthlySupport.toLocaleString(
-      "vi-VN"
-    )} VNĐ/tháng để thay đổi cuộc đời một em nhỏ.`;
+    const shareText =
+      language === "vi"
+        ? `Hãy cùng đỡ đầu em ${child.name} - ${child.district}, ${
+            child.province
+          }. Chỉ ${child.monthlySupport.toLocaleString(
+            "vi-VN"
+          )} VNĐ/tháng để thay đổi cuộc đời một em nhỏ.`
+        : `Help sponsor ${child.name} - ${child.district}, ${
+            child.province
+          }. Only ${child.monthlySupport.toLocaleString(
+            "vi-VN"
+          )} VND/month to change a child's life.`;
 
     if (navigator.share) {
       try {
@@ -85,12 +94,16 @@ export default function ChildDetailPage() {
       // Fallback: copy to clipboard
       try {
         await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-        toast.success("Đã sao chép liên kết!");
+        toast.success(t.common.copied);
       } catch {
-        toast.error("Không thể sao chép liên kết");
+        toast.error(
+          language === "vi"
+            ? "Không thể sao chép liên kết"
+            : "Could not copy link"
+        );
       }
     }
-  }, [child]);
+  }, [child, language, t.common.copied]);
 
   if (!child) {
     notFound();
@@ -134,7 +147,9 @@ export default function ChildDetailPage() {
               className="inline-flex items-center gap-2 text-amber-800 hover:text-amber-900 transition-colors mb-8"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Quay lại danh sách</span>
+              <span>
+                {language === "vi" ? "Quay lại danh sách" : "Back to list"}
+              </span>
             </Link>
 
             {/* Program Title */}
@@ -145,7 +160,10 @@ export default function ChildDetailPage() {
               <h1 className="text-4xl md:text-5xl font-bold text-amber-900 font-serif italic">
                 Nuôi Em
               </h1>
-              <p className="text-amber-800 mt-2">Năm học {child.schoolYear}</p>
+              <p className="text-amber-800 mt-2">
+                {language === "vi" ? "Năm học" : "School year"}{" "}
+                {child.schoolYear}
+              </p>
             </div>
 
             {/* Child Photo Card */}
@@ -202,11 +220,13 @@ export default function ChildDetailPage() {
                 {isSponsored && child.sponsor && (
                   <div className="mt-4 text-right">
                     <p className="text-sm text-gray-500 italic">
-                      Cảm ơn Anh/Chị:
+                      {language === "vi" ? "Cảm ơn Anh/Chị:" : "Thank you:"}
                     </p>
                     <p className="text-amber-700 font-semibold italic">
                       {child.sponsor.type === "organization"
-                        ? `Công ty ${child.sponsor.name}`
+                        ? `${language === "vi" ? "Công ty" : "Company"} ${
+                            child.sponsor.name
+                          }`
                         : child.sponsor.name}
                     </p>
                   </div>
@@ -227,7 +247,7 @@ export default function ChildDetailPage() {
               <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4">
                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
                   <Heart className="w-5 h-5" />
-                  Câu chuyện của em
+                  {t.childDetail.story}
                 </h3>
               </div>
               <div className="p-6">
@@ -244,10 +264,12 @@ export default function ChildDetailPage() {
                   <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
                     <Calendar className="w-5 h-5 text-amber-600" />
                   </div>
-                  <span className="text-sm text-gray-500">Tuổi</span>
+                  <span className="text-sm text-gray-500">
+                    {language === "vi" ? "Tuổi" : "Age"}
+                  </span>
                 </div>
                 <p className="text-2xl font-bold text-gray-800 ml-13">
-                  {child.age} tuổi
+                  {child.age} {t.children.age}
                 </p>
               </div>
 
@@ -256,10 +278,18 @@ export default function ChildDetailPage() {
                   <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
                     <User className="w-5 h-5 text-orange-600" />
                   </div>
-                  <span className="text-sm text-gray-500">Giới tính</span>
+                  <span className="text-sm text-gray-500">
+                    {language === "vi" ? "Giới tính" : "Gender"}
+                  </span>
                 </div>
                 <p className="text-2xl font-bold text-gray-800 ml-13">
-                  {child.gender === "male" ? "Nam" : "Nữ"}
+                  {child.gender === "male"
+                    ? language === "vi"
+                      ? "Nam"
+                      : "Male"
+                    : language === "vi"
+                    ? "Nữ"
+                    : "Female"}
                 </p>
               </div>
 
@@ -268,7 +298,9 @@ export default function ChildDetailPage() {
                   <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
                     <GraduationCap className="w-5 h-5 text-emerald-600" />
                   </div>
-                  <span className="text-sm text-gray-500">Lớp</span>
+                  <span className="text-sm text-gray-500">
+                    {t.children.grade}
+                  </span>
                 </div>
                 <p className="text-2xl font-bold text-gray-800 ml-13">
                   {child.grade}
@@ -280,7 +312,9 @@ export default function ChildDetailPage() {
                   <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                     <Building2 className="w-5 h-5 text-blue-600" />
                   </div>
-                  <span className="text-sm text-gray-500">Trường</span>
+                  <span className="text-sm text-gray-500">
+                    {t.children.school}
+                  </span>
                 </div>
                 <p className="text-lg font-bold text-gray-800 ml-13 truncate">
                   {child.school}
@@ -293,7 +327,7 @@ export default function ChildDetailPage() {
               <div className="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-4">
                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
                   <BookOpen className="w-5 h-5" />
-                  Em cần hỗ trợ
+                  {t.childDetail.needs}
                 </h3>
               </div>
               <div className="p-6">
@@ -317,7 +351,9 @@ export default function ChildDetailPage() {
             {/* Support Card */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden sticky top-24">
               <div className="bg-gradient-to-br from-amber-400 to-orange-500 p-6 text-center">
-                <p className="text-amber-100 text-sm mb-1">Hỗ trợ hàng tháng</p>
+                <p className="text-amber-100 text-sm mb-1">
+                  {t.children.monthlySupport}
+                </p>
                 <p className="text-4xl font-bold text-white">
                   {child.monthlySupport.toLocaleString("vi-VN")}
                   <span className="text-lg font-normal ml-1">VNĐ</span>
@@ -331,21 +367,25 @@ export default function ChildDetailPage() {
                       <CheckCircle2 className="w-8 h-8 text-emerald-500" />
                     </div>
                     <h4 className="text-lg font-bold text-gray-800 mb-2">
-                      Đã có người đỡ đầu
+                      {t.children.status.sponsored}
                     </h4>
                     <p className="text-gray-500 text-sm mb-4">
-                      Em {child.name} đã được{" "}
+                      {language === "vi"
+                        ? `Em ${child.name} đã được `
+                        : `${child.name} has been sponsored by `}
                       <span className="text-amber-600 font-medium">
                         {child.sponsor?.name}
-                      </span>{" "}
-                      nhận đỡ đầu.
+                      </span>
+                      {language === "vi" ? " nhận đỡ đầu." : "."}
                     </p>
                     <Link href="/children">
                       <Button
                         variant="outline"
                         className="w-full rounded-xl border-amber-300 text-amber-600 hover:bg-amber-50 hover:cursor-pointer"
                       >
-                        Xem các em khác
+                        {language === "vi"
+                          ? "Xem các em khác"
+                          : "View other children"}
                       </Button>
                     </Link>
                   </div>
@@ -361,11 +401,11 @@ export default function ChildDetailPage() {
                       )}
                     >
                       <Heart className="w-5 h-5 mr-2" />
-                      Đỡ đầu ngay
+                      {t.children.sponsorNow}
                     </Button>
 
                     <p className="text-center text-sm text-gray-500 mb-4">
-                      Thanh toán an toàn qua VNPay
+                      {t.payment.securePayment}
                     </p>
 
                     <div className="border-t border-gray-100 pt-4">
@@ -375,7 +415,7 @@ export default function ChildDetailPage() {
                         className="w-full justify-center text-gray-600 hover:text-amber-600 hover:cursor-pointer"
                       >
                         <Share2 className="w-4 h-4 mr-2" />
-                        Chia sẻ câu chuyện
+                        {t.childDetail.shareProfile}
                       </Button>
                     </div>
                   </>
@@ -386,9 +426,15 @@ export default function ChildDetailPage() {
             {/* Impact Note */}
             <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100">
               <p className="text-amber-800 text-sm leading-relaxed">
-                <span className="font-bold">*Theo thống kê,</span>
+                <span className="font-bold">
+                  {language === "vi"
+                    ? "*Theo thống kê,"
+                    : "*According to statistics,"}
+                </span>
                 <br />
-                Mỗi 1 chia sẻ hình ảnh này sẽ giúp thêm 1 bé được nhận Nuôi Cơm
+                {language === "vi"
+                  ? "Mỗi 1 chia sẻ hình ảnh này sẽ giúp thêm 1 bé được nhận Nuôi Cơm"
+                  : "Every share of this image helps one more child receive meal sponsorship"}
               </p>
               <p className="text-amber-600 font-medium mt-3 text-center">
                 www.nuoiem.com
@@ -402,7 +448,9 @@ export default function ChildDetailPage() {
       <div className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-2xl font-bold text-gray-800 text-center mb-8">
-            Các em nhỏ khác cần được đỡ đầu
+            {language === "vi"
+              ? "Các em nhỏ khác cần được đỡ đầu"
+              : "Other children who need sponsorship"}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {mockChildren

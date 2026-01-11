@@ -10,8 +10,10 @@ import {
 } from "@/components/children";
 import { mockChildren } from "@/lib/data/children";
 import type { Child } from "@/lib/types/child";
+import { useLanguage } from "@/lib/i18n";
 
 export default function ChildrenPage() {
+  const { t } = useLanguage();
   const [isLoading] = useState(false);
   const [filters, setFilters] = useState<{
     province?: string;
@@ -77,24 +79,20 @@ export default function ChildrenPage() {
             className="inline-flex items-center gap-2 text-gray-600 hover:text-amber-600 transition-colors mb-8"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Về trang chủ</span>
+            <span>{t.common.backToHome}</span>
           </Link>
 
           {/* Title */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 rounded-full text-amber-700 text-sm font-medium mb-4">
               <Heart className="w-4 h-4" />
-              <span>Chương trình Nuôi Em</span>
+              <span>{t.home.heroTitle}</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-              Các Em Nhỏ Cần{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-500">
-                Được Đỡ Đầu
-              </span>
+              {t.children.title}
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Mỗi em nhỏ đều có một câu chuyện, một ước mơ. Hãy cùng chúng tôi
-              mang đến cho các em cơ hội được học tập và phát triển.
+              {t.children.subtitle}
             </p>
           </div>
 
@@ -105,7 +103,9 @@ export default function ChildrenPage() {
                 <Users className="w-6 h-6 text-amber-600" />
               </div>
               <p className="text-3xl font-bold text-gray-800">{stats.total}</p>
-              <p className="text-sm text-gray-500">Tổng số em nhỏ</p>
+              <p className="text-sm text-gray-500">
+                {t.children.totalChildren}
+              </p>
             </div>
 
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-orange-100 text-center">
@@ -115,7 +115,9 @@ export default function ChildrenPage() {
               <p className="text-3xl font-bold text-gray-800">
                 {stats.waiting}
               </p>
-              <p className="text-sm text-gray-500">Đang chờ đỡ đầu</p>
+              <p className="text-sm text-gray-500">
+                {t.children.waitingForSponsor}
+              </p>
             </div>
 
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-emerald-100 text-center">
@@ -125,7 +127,9 @@ export default function ChildrenPage() {
               <p className="text-3xl font-bold text-gray-800">
                 {stats.sponsored}
               </p>
-              <p className="text-sm text-gray-500">Đã có người đỡ đầu</p>
+              <p className="text-sm text-gray-500">
+                {t.children.alreadySponsored}
+              </p>
             </div>
           </div>
         </div>
@@ -139,11 +143,11 @@ export default function ChildrenPage() {
         {/* Results Info */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-gray-600">
-            Hiển thị{" "}
+            {t.children.showing}{" "}
             <span className="font-semibold text-gray-800">
               {filteredChildren.length}
             </span>{" "}
-            em nhỏ
+            {t.children.children}
           </p>
         </div>
 
@@ -162,11 +166,9 @@ export default function ChildrenPage() {
               <Users className="w-10 h-10 text-gray-400" />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              Không tìm thấy kết quả
+              {t.children.noResults}
             </h3>
-            <p className="text-gray-500">
-              Hãy thử thay đổi bộ lọc để xem thêm các em nhỏ khác.
-            </p>
+            <p className="text-gray-500">{t.children.noResultsDesc}</p>
           </div>
         )}
       </div>
@@ -175,18 +177,17 @@ export default function ChildrenPage() {
       <div className="bg-gradient-to-r from-amber-500 to-orange-500 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
-            Mỗi sự đỡ đầu là một tia sáng
+            {t.children.ctaTitle}
           </h2>
           <p className="text-amber-100 mb-8 max-w-2xl mx-auto">
-            Chỉ với 150.000 VNĐ mỗi tháng, bạn có thể giúp một em nhỏ có bữa ăn
-            đủ đầy và cơ hội đến trường.
+            {t.children.ctaDescription}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="#"
               className="inline-flex items-center justify-center px-8 py-3 bg-white text-amber-600 font-semibold rounded-full hover:bg-amber-50 transition-colors shadow-lg"
             >
-              Tìm hiểu thêm
+              {t.home.learnMore}
             </Link>
           </div>
         </div>

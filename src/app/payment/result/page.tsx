@@ -21,11 +21,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useApiWithAuth } from "@/hooks/useApiWithAuth";
 import type { TransactionStatus } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/lib/i18n";
 
 function PaymentResultContent() {
   const searchParams = useSearchParams();
   const { isAuthenticated, token } = useAuth();
   const { getOrderStatus } = useApiWithAuth();
+  const { t, language } = useLanguage();
 
   const [status, setStatus] = useState<TransactionStatus | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -84,8 +86,10 @@ function PaymentResultContent() {
         success: isSuccess,
         orderId: vnpTxnRef,
         message: isSuccess
-          ? "Thanh toán thành công"
-          : getVNPayErrorMessage(vnpResponseCode),
+          ? language === "vi"
+            ? "Thanh toán thành công"
+            : "Payment successful"
+          : getVNPayErrorMessage(vnpResponseCode, language),
         amount: amountInVND,
         source: "vnpay" as const,
         bankCode: vnpBankCode,
@@ -102,11 +106,14 @@ function PaymentResultContent() {
     return {
       success: false,
       orderId: null,
-      message: "Không tìm thấy thông tin thanh toán",
+      message:
+        language === "vi"
+          ? "Không tìm thấy thông tin thanh toán"
+          : "Payment information not found",
       amount: null,
       source: "unknown" as const,
     };
-  }, [searchParams]);
+  }, [searchParams, language]);
 
   // Poll order status to check blockchain transaction
   useEffect(() => {
@@ -227,20 +234,24 @@ function PaymentResultContent() {
                 {/* Title */}
                 <h1 className="text-3xl font-bold text-white mb-3">
                   {paymentInfo.success
-                    ? "Thanh toán thành công!"
-                    : "Thanh toán thất bại"}
+                    ? t.paymentResult.success
+                    : t.paymentResult.failed}
                 </h1>
                 <p className="text-white/90 text-lg">
                   {paymentInfo.success
-                    ? "Cảm ơn bạn đã đóng góp cho chương trình Nuôi Em"
+                    ? t.paymentResult.thankYou
                     : paymentInfo.message ||
-                      "Đã có lỗi xảy ra trong quá trình thanh toán"}
+                      (language === "vi"
+                        ? "Đã có lỗi xảy ra trong quá trình thanh toán"
+                        : "An error occurred during payment")}
                 </p>
 
                 {/* Amount Badge */}
                 {paymentInfo.amount && (
                   <div className="mt-6 inline-block bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-3">
-                    <p className="text-white/80 text-sm mb-1">Số tiền</p>
+                    <p className="text-white/80 text-sm mb-1">
+                      {t.paymentResult.amount}
+                    </p>
                     <p className="text-3xl font-bold text-white">
                       {formatAmount(paymentInfo.amount)}{" "}
                       <span className="text-lg font-normal">VNĐ</span>
@@ -257,7 +268,9 @@ function PaymentResultContent() {
                 <div className="bg-gray-50 rounded-xl p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-500 mb-1">Mã đơn hàng</p>
+                      <p className="text-sm text-gray-500 mb-1">
+                        {t.paymentResult.orderId}
+                      </p>
                       <p className="font-mono text-sm text-gray-800 break-all">
                         {paymentInfo.orderId}
                       </p>
@@ -265,7 +278,7 @@ function PaymentResultContent() {
                     <button
                       onClick={handleCopyOrderId}
                       className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-                      title="Sao chép"
+                      title={t.common.copy}
                     >
                       {copied ? (
                         <Check className="w-5 h-5 text-emerald-500" />
@@ -282,7 +295,9 @@ function PaymentResultContent() {
                 <div className="grid grid-cols-2 gap-4">
                   {paymentInfo.bankCode && (
                     <div className="bg-blue-50 rounded-xl p-4">
-                      <p className="text-sm text-blue-600 mb-1">Ngân hàng</p>
+                      <p className="text-sm text-blue-600 mb-1">
+                        {language === "vi" ? "Ngân hàng" : "Bank"}
+                      </p>
                       <p className="font-semibold text-blue-800">
                         {paymentInfo.bankCode}
                       </p>
@@ -291,7 +306,7 @@ function PaymentResultContent() {
                   {paymentInfo.transactionNo && (
                     <div className="bg-purple-50 rounded-xl p-4">
                       <p className="text-sm text-purple-600 mb-1">
-                        Mã giao dịch
+                        {language === "vi" ? "Mã giao dịch" : "Transaction ID"}
                       </p>
                       <p className="font-semibold text-purple-800">
                         {paymentInfo.transactionNo}
@@ -303,7 +318,9 @@ function PaymentResultContent() {
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4 text-amber-600" />
                         <p className="text-sm text-amber-600">
-                          Thời gian thanh toán
+                          {language === "vi"
+                            ? "Thời gian thanh toán"
+                            : "Payment time"}
                         </p>
                       </div>
                       <p className="font-semibold text-amber-800 mt-1">
@@ -321,14 +338,16 @@ function PaymentResultContent() {
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-amber-500" />
                       <span className="font-medium text-amber-800">
-                        Trạng thái blockchain
+                        {language === "vi"
+                          ? "Trạng thái blockchain"
+                          : "Blockchain status"}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       {isPolling && (
                         <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
                       )}
-                      <StatusBadge status={status} />
+                      <StatusBadge status={status} language={language} />
                     </div>
                   </div>
 
@@ -348,8 +367,12 @@ function PaymentResultContent() {
                   {!txHash && status !== "completed" && (
                     <p className="text-sm text-amber-600 mt-2">
                       {isPolling
-                        ? "Đang xử lý giao dịch trên blockchain..."
-                        : "Token sẽ được chuyển vào ví của bạn trong giây lát"}
+                        ? language === "vi"
+                          ? "Đang xử lý giao dịch trên blockchain..."
+                          : "Processing transaction on blockchain..."
+                        : language === "vi"
+                        ? "Token sẽ được chuyển vào ví của bạn trong giây lát"
+                        : "Tokens will be transferred to your wallet shortly"}
                     </p>
                   )}
                 </div>
@@ -361,10 +384,11 @@ function PaymentResultContent() {
                 paymentInfo.responseCode !== "00" && (
                   <div className="bg-red-50 rounded-xl p-4 border border-red-200">
                     <p className="text-sm text-red-600 mb-1">
-                      Mã lỗi: {paymentInfo.responseCode}
+                      {language === "vi" ? "Mã lỗi:" : "Error code:"}{" "}
+                      {paymentInfo.responseCode}
                     </p>
                     <p className="text-red-800">
-                      {getVNPayErrorMessage(paymentInfo.responseCode)}
+                      {getVNPayErrorMessage(paymentInfo.responseCode, language)}
                     </p>
                   </div>
                 )}
@@ -387,7 +411,9 @@ function PaymentResultContent() {
                         )}
                       >
                         <Heart className="w-5 h-5 mr-2" />
-                        Tiếp tục đỡ đầu các em
+                        {language === "vi"
+                          ? "Tiếp tục đỡ đầu các em"
+                          : "Continue sponsoring children"}
                       </Button>
                     </Link>
                     <Link href="/payment" className="block">
@@ -395,7 +421,7 @@ function PaymentResultContent() {
                         variant="outline"
                         className="w-full h-11 rounded-xl border-amber-300 text-amber-600 hover:bg-amber-50 hover:cursor-pointer"
                       >
-                        Xem lịch sử giao dịch
+                        {t.payment.viewAllTransactions}
                       </Button>
                     </Link>
                   </>
@@ -411,7 +437,7 @@ function PaymentResultContent() {
                           "hover:cursor-pointer"
                         )}
                       >
-                        Thử thanh toán lại
+                        {t.paymentResult.tryAgain}
                       </Button>
                     </Link>
                   </>
@@ -423,7 +449,7 @@ function PaymentResultContent() {
                     className="w-full h-11 rounded-xl text-gray-600 hover:text-gray-800 hover:cursor-pointer"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Về trang chủ
+                    {t.common.backToHome}
                   </Button>
                 </Link>
               </div>
@@ -433,11 +459,13 @@ function PaymentResultContent() {
           {/* Trust badges */}
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-500">
-              Mọi giao dịch đều được ghi nhận minh bạch trên blockchain
+              {language === "vi"
+                ? "Mọi giao dịch đều được ghi nhận minh bạch trên blockchain"
+                : "All transactions are transparently recorded on the blockchain"}
             </p>
             <div className="flex items-center justify-center gap-4 mt-3">
               <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
-                🔒 Bảo mật SSL
+                🔒 {language === "vi" ? "Bảo mật SSL" : "SSL Secure"}
               </span>
               <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
                 ⛓️ Blockchain
@@ -453,16 +481,22 @@ function PaymentResultContent() {
   );
 }
 
-function StatusBadge({ status }: { status: TransactionStatus | null }) {
+function StatusBadge({
+  status,
+  language,
+}: {
+  status: TransactionStatus | null;
+  language: string;
+}) {
   if (!status) {
     return (
       <span className="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-        Đang kiểm tra...
+        {language === "vi" ? "Đang kiểm tra..." : "Checking..."}
       </span>
     );
   }
 
-  const statusConfig: Record<
+  const statusConfigVi: Record<
     TransactionStatus,
     { bg: string; text: string; label: string }
   > = {
@@ -485,7 +519,31 @@ function StatusBadge({ status }: { status: TransactionStatus | null }) {
     expired: { bg: "bg-gray-100", text: "text-gray-700", label: "Hết hạn" },
   };
 
-  const config = statusConfig[status];
+  const statusConfigEn: Record<
+    TransactionStatus,
+    { bg: string; text: string; label: string }
+  > = {
+    pending: {
+      bg: "bg-yellow-100",
+      text: "text-yellow-700",
+      label: "Pending",
+    },
+    processing: {
+      bg: "bg-blue-100",
+      text: "text-blue-700",
+      label: "Processing",
+    },
+    completed: {
+      bg: "bg-emerald-100",
+      text: "text-emerald-700",
+      label: "✓ Completed",
+    },
+    failed: { bg: "bg-red-100", text: "text-red-700", label: "Failed" },
+    expired: { bg: "bg-gray-100", text: "text-gray-700", label: "Expired" },
+  };
+
+  const config =
+    language === "vi" ? statusConfigVi[status] : statusConfigEn[status];
 
   return (
     <span
@@ -496,8 +554,8 @@ function StatusBadge({ status }: { status: TransactionStatus | null }) {
   );
 }
 
-function getVNPayErrorMessage(code: string): string {
-  const errorMessages: Record<string, string> = {
+function getVNPayErrorMessage(code: string, language: string): string {
+  const errorMessagesVi: Record<string, string> = {
     "00": "Giao dịch thành công",
     "07": "Trừ tiền thành công. Giao dịch bị nghi ngờ (liên quan tới lừa đảo, giao dịch bất thường)",
     "09": "Giao dịch không thành công do: Thẻ/Tài khoản chưa đăng ký dịch vụ InternetBanking",
@@ -513,7 +571,29 @@ function getVNPayErrorMessage(code: string): string {
     "99": "Lỗi không xác định",
   };
 
-  return errorMessages[code] || `Lỗi không xác định (Mã: ${code})`;
+  const errorMessagesEn: Record<string, string> = {
+    "00": "Transaction successful",
+    "07": "Deduction successful. Transaction suspected (related to fraud, abnormal transaction)",
+    "09": "Transaction failed: Card/Account not registered for InternetBanking service",
+    "10": "Transaction failed: Customer authentication failed 3 times",
+    "11": "Transaction failed: Payment waiting period expired",
+    "12": "Transaction failed: Card/Account is locked",
+    "13": "Transaction failed: Wrong OTP password",
+    "24": "Transaction failed: Customer cancelled transaction",
+    "51": "Transaction failed: Insufficient account balance",
+    "65": "Transaction failed: Account exceeded daily transaction limit",
+    "75": "Payment bank is under maintenance",
+    "79": "Transaction failed: Payment password entered incorrectly too many times",
+    "99": "Unknown error",
+  };
+
+  const errorMessages = language === "vi" ? errorMessagesVi : errorMessagesEn;
+  return (
+    errorMessages[code] ||
+    (language === "vi"
+      ? `Lỗi không xác định (Mã: ${code})`
+      : `Unknown error (Code: ${code})`)
+  );
 }
 
 function PaymentResultLoading() {
@@ -526,9 +606,9 @@ function PaymentResultLoading() {
               <Loader2 className="w-10 h-10 animate-spin text-amber-500" />
             </div>
             <p className="text-xl font-medium text-gray-700 mb-2">
-              Đang xử lý...
+              Processing...
             </p>
-            <p className="text-gray-500">Vui lòng đợi trong giây lát</p>
+            <p className="text-gray-500">Please wait a moment</p>
           </div>
         </div>
       </div>

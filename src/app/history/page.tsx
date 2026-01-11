@@ -28,12 +28,14 @@ import { useApiWithAuth } from "@/hooks/useApiWithAuth";
 import type { Transaction, TransactionStatus } from "@/lib/api/types";
 import { mockMealProofs, getRecentProofs } from "@/lib/data/mealProofs";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/lib/i18n";
 
 type TabType = "transactions" | "proofs";
 
 export default function HistoryPage() {
   const { isAuthenticated, token } = useAuth();
   const { getTransactions } = useApiWithAuth();
+  const { t, language } = useLanguage();
 
   const [activeTab, setActiveTab] = useState<TabType>("transactions");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -93,15 +95,15 @@ export default function HistoryPage() {
   const getStatusText = (status: TransactionStatus) => {
     switch (status) {
       case "completed":
-        return "Thành công";
+        return t.history.status.completed;
       case "pending":
-        return "Đang chờ";
+        return t.history.status.pending;
       case "processing":
-        return "Đang xử lý";
+        return t.history.status.processing;
       case "failed":
-        return "Thất bại";
+        return t.history.status.failed;
       case "expired":
-        return "Hết hạn";
+        return t.history.status.expired;
       default:
         return status;
     }
@@ -124,7 +126,7 @@ export default function HistoryPage() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN", {
+    return date.toLocaleDateString(language === "vi" ? "vi-VN" : "en-US", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -160,22 +162,20 @@ export default function HistoryPage() {
             className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Quay lại trang chủ</span>
+            <span>{t.common.backToHome}</span>
           </Link>
 
           <div className="text-center pb-8">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
               <Shield className="w-4 h-4 text-white" />
               <span className="text-white text-sm font-medium">
-                Minh bạch trên Blockchain
+                {t.common.verifiedOnBlockchain}
               </span>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              Lịch sử hoạt động
+              {t.history.title}
             </h1>
-            <p className="text-white/90 text-lg">
-              Theo dõi giao dịch và bằng chứng bữa ăn của các em
-            </p>
+            <p className="text-white/90 text-lg">{t.history.subtitle}</p>
           </div>
         </div>
       </div>
@@ -193,7 +193,7 @@ export default function HistoryPage() {
             )}
           >
             <Receipt className="w-5 h-5" />
-            <span>Giao dịch</span>
+            <span>{t.history.tabTransactions}</span>
           </button>
           <button
             onClick={() => setActiveTab("proofs")}
@@ -205,7 +205,7 @@ export default function HistoryPage() {
             )}
           >
             <Camera className="w-5 h-5" />
-            <span>Bằng chứng bữa ăn</span>
+            <span>{t.history.tabProofs}</span>
           </button>
         </div>
       </div>
@@ -227,6 +227,7 @@ export default function HistoryPage() {
             formatDate={formatDate}
             formatAmount={formatAmount}
             shortenHash={shortenHash}
+            t={t}
           />
         ) : (
           <ProofsTab
@@ -235,6 +236,7 @@ export default function HistoryPage() {
             onCopyHash={copyToClipboard}
             formatDate={formatDate}
             shortenHash={shortenHash}
+            t={t}
           />
         )}
       </div>
@@ -257,6 +259,7 @@ interface TransactionsTabProps {
   formatDate: (date: string) => string;
   formatAmount: (amount: number) => string;
   shortenHash: (hash: string) => string;
+  t: ReturnType<typeof useLanguage>["t"];
 }
 
 function TransactionsTab({
@@ -273,6 +276,7 @@ function TransactionsTab({
   formatDate,
   formatAmount,
   shortenHash,
+  t,
 }: TransactionsTabProps) {
   if (!isAuthenticated) {
     return (
@@ -281,14 +285,12 @@ function TransactionsTab({
           <Wallet className="w-8 h-8 text-amber-600" />
         </div>
         <h3 className="text-xl font-bold text-gray-800 mb-2">
-          Đăng nhập để xem lịch sử
+          {t.history.loginToView}
         </h3>
-        <p className="text-gray-600 mb-6">
-          Bạn cần đăng nhập để xem lịch sử giao dịch của mình
-        </p>
+        <p className="text-gray-600 mb-6">{t.history.loginToViewDesc}</p>
         <Link href="/">
           <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white">
-            Đăng nhập ngay
+            {t.history.loginNow}
           </Button>
         </Link>
       </div>
@@ -299,7 +301,7 @@ function TransactionsTab({
     return (
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
         <Loader2 className="w-12 h-12 text-amber-500 animate-spin mx-auto mb-4" />
-        <p className="text-gray-600">Đang tải lịch sử giao dịch...</p>
+        <p className="text-gray-600">{t.history.loadingHistory}</p>
       </div>
     );
   }
@@ -311,7 +313,7 @@ function TransactionsTab({
           <XCircle className="w-8 h-8 text-red-500" />
         </div>
         <h3 className="text-xl font-bold text-gray-800 mb-2">
-          Không thể tải dữ liệu
+          {t.history.cannotLoadData}
         </h3>
         <p className="text-gray-600 mb-6">{error}</p>
         <Button
@@ -319,7 +321,7 @@ function TransactionsTab({
           className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
-          Thử lại
+          {t.history.tryAgain}
         </Button>
       </div>
     );
@@ -332,15 +334,13 @@ function TransactionsTab({
           <Receipt className="w-8 h-8 text-amber-600" />
         </div>
         <h3 className="text-xl font-bold text-gray-800 mb-2">
-          Chưa có giao dịch nào
+          {t.history.noTransactions}
         </h3>
-        <p className="text-gray-600 mb-6">
-          Bạn chưa thực hiện giao dịch ủng hộ nào
-        </p>
+        <p className="text-gray-600 mb-6">{t.history.noTransactionsDesc}</p>
         <Link href="/children">
           <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white">
             <TrendingUp className="w-4 h-4 mr-2" />
-            Ủng hộ ngay
+            {t.common.supportNow}
           </Button>
         </Link>
       </div>
@@ -352,7 +352,7 @@ function TransactionsTab({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-800">
-          {transactions.length} giao dịch
+          {transactions.length} {t.history.transactions}
         </h2>
         <Button
           variant="outline"
@@ -361,7 +361,7 @@ function TransactionsTab({
           className="text-gray-600"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
-          Làm mới
+          {t.history.refresh}
         </Button>
       </div>
 
@@ -436,6 +436,7 @@ interface ProofsTabProps {
   onCopyHash: (hash: string) => void;
   formatDate: (date: string) => string;
   shortenHash: (hash: string) => string;
+  t: ReturnType<typeof useLanguage>["t"];
 }
 
 function ProofsTab({
@@ -444,15 +445,16 @@ function ProofsTab({
   onCopyHash,
   formatDate,
   shortenHash,
+  t,
 }: ProofsTabProps) {
   const getMealTypeText = (type: string) => {
     switch (type) {
       case "breakfast":
-        return "Bữa sáng";
+        return t.history.mealTypes.breakfast;
       case "lunch":
-        return "Bữa trưa";
+        return t.history.mealTypes.lunch;
       case "dinner":
-        return "Bữa tối";
+        return t.history.mealTypes.dinner;
       default:
         return type;
     }
@@ -463,11 +465,11 @@ function ProofsTab({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-800">
-          {proofs.length} bằng chứng bữa ăn
+          {proofs.length} {t.history.mealProofs}
         </h2>
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Shield className="w-4 h-4 text-green-500" />
-          <span>Đã xác thực trên Blockchain</span>
+          <span>{t.common.verifiedOnBlockchain}</span>
         </div>
       </div>
 
@@ -479,11 +481,10 @@ function ProofsTab({
           </div>
           <div>
             <h3 className="font-bold text-green-800 mb-1">
-              Minh bạch 100% trên Blockchain
+              {t.history.proofInfo.title}
             </h3>
             <p className="text-sm text-green-700">
-              Mỗi bữa ăn được chụp ảnh và lưu trữ trên IPFS, ghi nhận trên
-              blockchain Mantle để đảm bảo tính minh bạch và không thể thay đổi.
+              {t.history.proofInfo.description}
             </p>
           </div>
         </div>
@@ -522,7 +523,7 @@ function ProofsTab({
                 </div>
                 <div className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
                   <CheckCircle2 className="w-3 h-3" />
-                  <span>Đã xác thực</span>
+                  <span>{t.history.verified}</span>
                 </div>
               </div>
 
@@ -577,7 +578,7 @@ function ProofsTab({
               <div className="mt-3 pt-3 border-t border-gray-100">
                 <p className="text-xs text-gray-500">
                   <UtensilsCrossed className="w-3 h-3 inline mr-1" />
-                  Gửi bởi: {proof.submittedBy}
+                  {t.history.submittedBy}: {proof.submittedBy}
                 </p>
               </div>
             </div>

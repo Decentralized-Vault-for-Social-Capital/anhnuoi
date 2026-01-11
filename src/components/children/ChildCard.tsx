@@ -7,6 +7,7 @@ import { MapPin, Heart, GraduationCap, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Child } from "@/lib/types/child";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/lib/i18n";
 
 interface ChildCardProps {
   child: Child;
@@ -14,6 +15,7 @@ interface ChildCardProps {
 }
 
 export function ChildCard({ child, className }: ChildCardProps) {
+  const { t, language } = useLanguage();
   const isSponsored = child.status === "sponsored";
 
   return (
@@ -29,7 +31,7 @@ export function ChildCard({ child, className }: ChildCardProps) {
         <div className="absolute top-4 right-4 z-10">
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500 text-white text-xs font-medium shadow-lg">
             <Heart className="w-3 h-3 fill-current" />
-            Đã có người đỡ đầu
+            {t.children.status.sponsored}
           </span>
         </div>
       )}
@@ -72,7 +74,14 @@ export function ChildCard({ child, className }: ChildCardProps) {
             {child.name}
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            {child.age} tuổi • {child.gender === "male" ? "Nam" : "Nữ"}
+            {child.age} {t.children.age} •{" "}
+            {child.gender === "male"
+              ? language === "vi"
+                ? "Nam"
+                : "Male"
+              : language === "vi"
+              ? "Nữ"
+              : "Female"}
           </p>
         </div>
 
@@ -91,7 +100,7 @@ export function ChildCard({ child, className }: ChildCardProps) {
         {/* Divider */}
         <div className="border-t border-gray-100 pt-4 mb-4">
           <p className="text-xs text-gray-500 text-center mb-2">
-            Hỗ trợ hàng tháng
+            {t.children.monthlySupport}
           </p>
           <p className="text-2xl font-bold text-center text-amber-600">
             {child.monthlySupport.toLocaleString("vi-VN")}
@@ -111,7 +120,7 @@ export function ChildCard({ child, className }: ChildCardProps) {
                 : "bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white shadow-md hover:shadow-lg"
             )}
           >
-            {isSponsored ? "Xem chi tiết" : "Đỡ đầu ngay"}
+            {isSponsored ? t.common.viewDetails : t.children.sponsorNow}
           </Button>
         </Link>
       </div>

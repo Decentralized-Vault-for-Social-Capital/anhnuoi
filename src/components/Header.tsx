@@ -6,18 +6,20 @@ import { Button } from "@/components/ui/button";
 import {
   Menu,
   X,
-  Heart,
   LogOut,
   User,
   ChevronRight,
   History,
+  Globe,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/lib/i18n";
 import Image from "next/image";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { language, setLanguage, t } = useLanguage();
   const {
     login,
     logout,
@@ -78,36 +80,45 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-24">
+          <nav className="hidden md:flex items-center gap-16">
             <Link
               href="#story"
               className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-md"
             >
-              Về dự án
+              {t.header.aboutProject}
             </Link>
             <Link
               href="#how-it-works"
               className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-md"
             >
-              Cách thức
+              {t.header.howItWorks}
             </Link>
             <Link
               href="/children"
               className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-md"
             >
-              Danh sách em
+              {t.header.childrenList}
             </Link>
             <Link
               href="/history"
               className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-md flex items-center gap-1"
             >
               <History className="w-4 h-4" />
-              Lịch sử
+              {t.header.history}
             </Link>
           </nav>
 
-          {/* Connect Wallet Button */}
-          <div className="hidden md:flex items-center gap-4">
+          {/* Right Section - Language + Auth */}
+          <div className="hidden md:flex items-center gap-3">
+            {/* Language Switcher */}
+            <button
+              onClick={() => setLanguage(language === "vi" ? "en" : "vi")}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors bg-[#EDE8DC] hover:bg-[#E5E1D8] text-[#2D3A2E]"
+            >
+              <Globe className="w-4 h-4" />
+              <span>{language === "vi" ? "EN" : "VI"}</span>
+            </button>
+
             {showAsLoggedIn ? (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 px-4 py-2 bg-[#EDE8DC] rounded-xl border border-[#E5E1D8]">
@@ -134,7 +145,7 @@ const Header = () => {
                   disabled={isLoading}
                 >
                   <LogOut className="w-4 h-4 mr-1.5" />
-                  {isLoading ? "..." : "Thoát"}
+                  {isLoading ? "..." : t.header.exit}
                 </Button>
               </div>
             ) : (
@@ -143,7 +154,7 @@ const Header = () => {
                 className="bg-[#C25E44] hover:bg-[#A14D38] text-white font-bold rounded-xl px-6 border-2 border-[#C25E44] hover:border-[#A14D38] transition-all hover:scale-[1.02] hover:cursor-pointer"
                 disabled={isLoading}
               >
-                {isLoading ? "Đang kết nối..." : "Đăng nhập"}
+                {isLoading ? t.common.connecting : t.common.login}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             )}
@@ -166,26 +177,50 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-6 border-t border-[#E5E1D8] bg-[#F7F3E9]">
             <nav className="flex flex-col gap-4">
+              {/* Language Switcher Mobile */}
+              <div className="flex items-center gap-2 px-2 py-2">
+                <button
+                  onClick={() => setLanguage("vi")}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    language === "vi"
+                      ? "bg-[#C25E44] text-white"
+                      : "bg-[#EDE8DC] text-[#2D3A2E]"
+                  }`}
+                >
+                  🇻🇳 Tiếng Việt
+                </button>
+                <button
+                  onClick={() => setLanguage("en")}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    language === "en"
+                      ? "bg-[#C25E44] text-white"
+                      : "bg-[#EDE8DC] text-[#2D3A2E]"
+                  }`}
+                >
+                  🇬🇧 English
+                </button>
+              </div>
+
               <Link
                 href="#story"
                 className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium px-2 py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Về dự án
+                {t.header.aboutProject}
               </Link>
               <Link
                 href="#how-it-works"
                 className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium px-2 py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Cách thức
+                {t.header.howItWorks}
               </Link>
               <Link
                 href="/children"
                 className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium px-2 py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Danh sách em
+                {t.header.childrenList}
               </Link>
               <Link
                 href="/history"
@@ -193,7 +228,7 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 <History className="w-4 h-4" />
-                Lịch sử
+                {t.header.history}
               </Link>
               <div className="pt-4 mt-2 border-t border-[#E5E1D8]">
                 {showAsLoggedIn ? (
@@ -221,7 +256,7 @@ const Header = () => {
                       disabled={isLoading}
                     >
                       <LogOut className="w-4 h-4 mr-2" />
-                      {isLoading ? "Đang thoát..." : "Đăng xuất"}
+                      {isLoading ? "..." : t.common.logout}
                     </Button>
                   </div>
                 ) : (
@@ -230,7 +265,7 @@ const Header = () => {
                     className="w-full bg-[#C25E44] hover:bg-[#A14D38] text-white font-bold rounded-xl border-2 border-[#C25E44] hover:cursor-pointer"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Đang kết nối..." : "Đăng nhập"}
+                    {isLoading ? t.common.connecting : t.common.login}
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 )}

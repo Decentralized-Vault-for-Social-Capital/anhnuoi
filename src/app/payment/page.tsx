@@ -32,60 +32,72 @@ import type {
   ExchangeRateResponse,
 } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/lib/i18n";
 
 // Predefined amounts in VND
 const PRESET_AMOUNTS = [50000, 100000, 200000, 500000, 1000000, 2000000];
 
 // Bank options
 const BANK_OPTIONS = [
-  { code: "", name: "Tất cả ngân hàng", icon: "🏦" },
-  { code: "NCB", name: "NCB", icon: "🏛️" },
-  { code: "VIETCOMBANK", name: "Vietcombank", icon: "💳" },
-  { code: "TECHCOMBANK", name: "Techcombank", icon: "🔷" },
-  { code: "MBBANK", name: "MB Bank", icon: "💜" },
-  { code: "VPBANK", name: "VPBank", icon: "💚" },
+  { code: "", name: { vi: "Tất cả ngân hàng", en: "All Banks" }, icon: "🏦" },
+  { code: "NCB", name: { vi: "NCB", en: "NCB" }, icon: "🏛️" },
+  {
+    code: "VIETCOMBANK",
+    name: { vi: "Vietcombank", en: "Vietcombank" },
+    icon: "💳",
+  },
+  {
+    code: "TECHCOMBANK",
+    name: { vi: "Techcombank", en: "Techcombank" },
+    icon: "🔷",
+  },
+  { code: "MBBANK", name: { vi: "MB Bank", en: "MB Bank" }, icon: "💜" },
+  { code: "VPBANK", name: { vi: "VPBank", en: "VPBank" }, icon: "💚" },
 ];
-
-const statusConfig: Record<
-  TransactionStatus,
-  { icon: React.ReactNode; label: string; color: string }
-> = {
-  pending: {
-    icon: <Clock className="w-4 h-4" />,
-    label: "Đang chờ",
-    color: "text-yellow-600 bg-yellow-50",
-  },
-  processing: {
-    icon: <Loader2 className="w-4 h-4 animate-spin" />,
-    label: "Đang xử lý",
-    color: "text-blue-600 bg-blue-50",
-  },
-  completed: {
-    icon: <CheckCircle2 className="w-4 h-4" />,
-    label: "Hoàn thành",
-    color: "text-emerald-600 bg-emerald-50",
-  },
-  failed: {
-    icon: <XCircle className="w-4 h-4" />,
-    label: "Thất bại",
-    color: "text-red-600 bg-red-50",
-  },
-  expired: {
-    icon: <AlertCircle className="w-4 h-4" />,
-    label: "Hết hạn",
-    color: "text-gray-600 bg-gray-50",
-  },
-};
 
 function PaymentContent() {
   const searchParams = useSearchParams();
+  const { t, language } = useLanguage();
   const {
     isAuthenticated,
     isConnected,
     token,
     login,
+    address,
     isLoading: authLoading,
   } = useAuth();
+
+  // Status config with translations
+  const statusConfig: Record<
+    TransactionStatus,
+    { icon: React.ReactNode; label: string; color: string }
+  > = {
+    pending: {
+      icon: <Clock className="w-4 h-4" />,
+      label: t.history.status.pending,
+      color: "text-yellow-600 bg-yellow-50",
+    },
+    processing: {
+      icon: <Loader2 className="w-4 h-4 animate-spin" />,
+      label: t.history.status.processing,
+      color: "text-blue-600 bg-blue-50",
+    },
+    completed: {
+      icon: <CheckCircle2 className="w-4 h-4" />,
+      label: t.history.status.completed,
+      color: "text-emerald-600 bg-emerald-50",
+    },
+    failed: {
+      icon: <XCircle className="w-4 h-4" />,
+      label: t.history.status.failed,
+      color: "text-red-600 bg-red-50",
+    },
+    expired: {
+      icon: <AlertCircle className="w-4 h-4" />,
+      label: t.history.status.expired,
+      color: "text-gray-600 bg-gray-50",
+    },
+  };
 
   // Get child info from URL params (when coming from child detail page)
   const childId = searchParams.get("childId");
@@ -175,33 +187,51 @@ function PaymentContent() {
   // Handle payment submission
   const handleSubmit = async () => {
     if (!isAuthenticated || !token) {
-      setError("Vui lòng đăng nhập để thanh toán");
+      setError(t.payment.loginRequired);
+      return;
+    }
+
+    if (!address) {
+      setError(t.payment.noWallet);
       return;
     }
 
     if (amount < 10000) {
-      setError("Số tiền tối thiểu là 10,000 VNĐ");
+      setError(t.payment.minAmount);
       return;
     }
 
     setIsSubmitting(true);
     setError(null);
 
-    try {
-      const result = await api.payment.create(token, {
-        amount,
-        bankCode: selectedBank || undefined,
-        language: "vn",
-      });
+    console.log("Initiating payment:", { wallet: address, amount });
 
-      if (result.success) {
+    try {
+      // Call both endpoints in parallel
+      const [ipnResult, createResult] = await Promise.all([
+        // 1. Trigger VNPay IPN with wallet and amount
+        api.payment.triggerVnpayIpn({
+          wallet: address,
+          amount,
+        }),
+        // 2. Create VNPay payment URL
+        api.payment.create(token, {
+          amount,
+          bankCode: selectedBank || undefined,
+          language: language === "vi" ? "vn" : "en",
+        }),
+      ]);
+
+      console.log("VNPay IPN result:", ipnResult);
+
+      if (createResult.success) {
         // Redirect to VNPay payment URL
-        window.location.href = result.data.paymentUrl;
+        window.location.href = createResult.data.paymentUrl;
       } else {
-        setError(result.error || "Không thể tạo thanh toán");
+        setError(createResult.error || t.payment.cannotCreatePayment);
       }
     } catch (err) {
-      setError("Đã xảy ra lỗi. Vui lòng thử lại.");
+      setError(t.payment.paymentError);
       console.error("Payment error:", err);
     } finally {
       setIsSubmitting(false);
@@ -215,13 +245,16 @@ function PaymentContent() {
 
   // Format date
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return new Date(dateString).toLocaleDateString(
+      language === "vi" ? "vi-VN" : "en-US",
+      {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    );
   };
 
   return (
@@ -248,16 +281,14 @@ function PaymentContent() {
             className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>
-              {childId ? "Quay lại trang em nhỏ" : "Quay lại trang chủ"}
-            </span>
+            <span>{t.common.backToHome}</span>
           </Link>
 
           <div className="text-center">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
               <Shield className="w-4 h-4 text-white" />
               <span className="text-white text-sm font-medium">
-                Thanh toán an toàn với VNPay
+                {t.payment.securePayment}
               </span>
             </div>
             {childName ? (
@@ -266,21 +297,19 @@ function PaymentContent() {
                   <Heart className="w-8 h-8 text-white" />
                 </div>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                  Đỡ đầu em {childName}
+                  {t.payment.sponsorFor} {childName}
                 </h1>
                 <p className="text-white/90 text-lg max-w-2xl mx-auto">
-                  Cảm ơn bạn đã chọn đỡ đầu em {childName}. Mỗi đóng góp của bạn
-                  sẽ giúp em có cơ hội được học tập và phát triển tốt hơn.
+                  {t.payment.subtitle}
                 </p>
               </>
             ) : (
               <>
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                  Nạp tiền ủng hộ
+                  {t.payment.title}
                 </h1>
                 <p className="text-white/90 text-lg max-w-2xl mx-auto">
-                  Chuyển đổi VNĐ thành token để ủng hộ các em nhỏ. Mọi đóng góp
-                  đều được ghi nhận minh bạch trên blockchain.
+                  {t.payment.subtitle}
                 </p>
               </>
             )}
@@ -301,7 +330,9 @@ function PaymentContent() {
                     <Heart className="w-7 h-7 text-rose-500" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-rose-600 font-medium">Bạn đang đỡ đầu</p>
+                    <p className="text-rose-600 font-medium">
+                      {t.payment.sponsorFor}
+                    </p>
                     <p className="text-xl font-bold text-gray-800">
                       {childName}
                     </p>
@@ -310,7 +341,7 @@ function PaymentContent() {
                     href={`/children/${childId}`}
                     className="text-rose-500 hover:text-rose-600 text-sm font-medium"
                   >
-                    Xem thông tin →
+                    {t.common.viewDetails} →
                   </Link>
                 </div>
               </div>
@@ -321,7 +352,7 @@ function PaymentContent() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-emerald-500" />
-                  Quy đổi hiện tại
+                  {t.payment.exchangeRate}
                 </h2>
                 {isLoadingRate && (
                   <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
@@ -358,7 +389,7 @@ function PaymentContent() {
               <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <Coins className="w-5 h-5" />
-                  Chọn số tiền
+                  {t.payment.selectAmount}
                 </h2>
               </div>
 
@@ -385,14 +416,14 @@ function PaymentContent() {
                 {/* Custom Amount */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Hoặc nhập số tiền khác
+                    {t.payment.customAmount}
                   </label>
                   <div className="relative">
                     <input
                       type="text"
                       value={customAmount}
                       onChange={handleCustomAmountChange}
-                      placeholder="Nhập số tiền..."
+                      placeholder={t.payment.enterAmount}
                       className="w-full px-4 py-3 pr-16 border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-lg"
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
@@ -400,7 +431,7 @@ function PaymentContent() {
                     </span>
                   </div>
                   <p className="text-sm text-gray-500 mt-2">
-                    * Số tiền tối thiểu: 10,000 VNĐ
+                    * {t.payment.minAmount}
                   </p>
                 </div>
 
@@ -412,7 +443,9 @@ function PaymentContent() {
                         <Zap className="w-6 h-6 text-emerald-600" />
                       </div>
                       <div>
-                        <p className="text-sm text-emerald-600">Bạn sẽ nhận</p>
+                        <p className="text-sm text-emerald-600">
+                          {t.payment.youWillReceive}
+                        </p>
                         <p className="text-2xl font-bold text-emerald-700">
                           {tokenAmount}{" "}
                           <span className="text-lg">
@@ -432,7 +465,7 @@ function PaymentContent() {
               <div className="bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-4">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <CreditCard className="w-5 h-5" />
-                  Chọn ngân hàng
+                  {t.payment.selectBank}
                 </h2>
               </div>
 
@@ -450,7 +483,9 @@ function PaymentContent() {
                       )}
                     >
                       <span className="text-2xl mb-2 block">{bank.icon}</span>
-                      <p className="text-sm font-medium">{bank.name}</p>
+                      <p className="text-sm font-medium">
+                        {bank.name[language]}
+                      </p>
                     </button>
                   ))}
                 </div>
@@ -463,7 +498,9 @@ function PaymentContent() {
             {/* Summary & Pay */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden sticky top-24">
               <div className="bg-gradient-to-br from-amber-400 to-orange-500 p-6 text-center">
-                <p className="text-amber-100 text-sm mb-1">Tổng thanh toán</p>
+                <p className="text-amber-100 text-sm mb-1">
+                  {t.payment.totalPayment}
+                </p>
                 <p className="text-4xl font-bold text-white">
                   {formatVND(amount)}
                   <span className="text-lg font-normal ml-1">VNĐ</span>
@@ -497,7 +534,7 @@ function PaymentContent() {
                     ) : (
                       <Wallet className="w-5 h-5 mr-2" />
                     )}
-                    Đăng nhập để thanh toán
+                    {t.payment.loginRequired}
                   </Button>
                 ) : (
                   <Button
@@ -516,22 +553,22 @@ function PaymentContent() {
                     ) : (
                       <CreditCard className="w-5 h-5 mr-2" />
                     )}
-                    {isSubmitting ? "Đang xử lý..." : "Thanh toán ngay"}
+                    {isSubmitting ? t.payment.processing : t.payment.payNow}
                   </Button>
                 )}
 
                 <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
                   <Shield className="w-4 h-4" />
-                  <span>Bảo mật bởi VNPay</span>
+                  <span>{t.payment.securedByVnpay}</span>
                 </div>
 
                 <div className="border-t border-gray-100 pt-4 space-y-2 text-sm text-gray-600">
                   <div className="flex justify-between">
-                    <span>Số tiền nạp</span>
+                    <span>{t.payment.depositAmount}</span>
                     <span className="font-medium">{formatVND(amount)} VNĐ</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Quy đổi</span>
+                    <span>{t.payment.conversion}</span>
                     <span className="font-medium">
                       {exchangeRate
                         ? `${formatVND(exchangeRate.vndPerToken)} VNĐ/Token`
@@ -539,13 +576,13 @@ function PaymentContent() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Phí giao dịch</span>
+                    <span>{t.payment.transactionFee}</span>
                     <span className="font-medium text-emerald-600">
-                      Miễn phí
+                      {t.payment.free}
                     </span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-gray-100 font-bold">
-                    <span>Token nhận được</span>
+                    <span>{t.payment.tokensReceived}</span>
                     <span className="text-amber-600">
                       {tokenAmount} {exchangeRate?.tokenSymbol || "Token"}
                     </span>
@@ -557,24 +594,24 @@ function PaymentContent() {
             {/* Benefits */}
             <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100">
               <h3 className="font-bold text-amber-800 mb-4">
-                Lợi ích khi đóng góp
+                {t.payment.benefits}
               </h3>
               <ul className="space-y-3 text-sm text-amber-700">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 mt-0.5 text-emerald-500 flex-shrink-0" />
-                  <span>Minh bạch 100% trên blockchain</span>
+                  <span>{t.payment.benefit1}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 mt-0.5 text-emerald-500 flex-shrink-0" />
-                  <span>Theo dõi đóng góp realtime</span>
+                  <span>{t.payment.benefit2}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 mt-0.5 text-emerald-500 flex-shrink-0" />
-                  <span>Không phí ẩn, không trung gian</span>
+                  <span>{t.payment.benefit3}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 mt-0.5 text-emerald-500 flex-shrink-0" />
-                  <span>Hỗ trợ trực tiếp cho các em</span>
+                  <span>{t.payment.benefit4}</span>
                 </li>
               </ul>
             </div>
@@ -587,7 +624,7 @@ function PaymentContent() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                 <History className="w-6 h-6 text-amber-500" />
-                Lịch sử giao dịch
+                {t.payment.recentTransactions}
               </h2>
               <Button
                 variant="outline"
@@ -601,7 +638,7 @@ function PaymentContent() {
                     isLoadingTransactions && "animate-spin"
                   )}
                 />
-                Làm mới
+                {t.history.refresh}
               </Button>
             </div>
 
@@ -609,7 +646,7 @@ function PaymentContent() {
               {isLoadingTransactions ? (
                 <div className="p-8 text-center">
                   <Loader2 className="w-8 h-8 animate-spin text-amber-500 mx-auto mb-4" />
-                  <p className="text-gray-500">Đang tải...</p>
+                  <p className="text-gray-500">{t.common.loading}</p>
                 </div>
               ) : transactions.length > 0 ? (
                 <div className="divide-y divide-gray-100">
@@ -659,7 +696,7 @@ function PaymentContent() {
                                 rel="noopener noreferrer"
                                 className="text-xs text-blue-500 hover:underline flex items-center justify-end gap-1 mt-1"
                               >
-                                Xem TX
+                                {t.payment.viewTx}
                                 <ExternalLink className="w-3 h-3" />
                               </a>
                             )}
@@ -674,9 +711,11 @@ function PaymentContent() {
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <History className="w-8 h-8 text-gray-400" />
                   </div>
-                  <p className="text-gray-500 mb-2">Chưa có giao dịch nào</p>
+                  <p className="text-gray-500 mb-2">
+                    {t.payment.noTransactions}
+                  </p>
                   <p className="text-sm text-gray-400">
-                    Các giao dịch của bạn sẽ hiển thị ở đây
+                    {t.payment.transactionsWillAppear}
                   </p>
                 </div>
               )}

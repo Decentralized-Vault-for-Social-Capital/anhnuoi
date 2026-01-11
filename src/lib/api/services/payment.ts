@@ -10,6 +10,8 @@ import type {
   TransactionsResponse,
   OrderStatusResponse,
   ExchangeRateResponse,
+  VnpayIpnRequest,
+  VnpayIpnResponse,
 } from "../types";
 
 /**
@@ -65,6 +67,17 @@ export async function getExchangeRate(): Promise<
   ApiResult<ExchangeRateResponse>
 > {
   return apiClient.get<ExchangeRateResponse>("/payment/rate");
+}
+
+/**
+ * Trigger VNPay IPN for direct payment processing
+ * @param data - Wallet address and amount in VND
+ * @returns IPN processing result with optional txHash
+ */
+export async function triggerVnpayIpn(
+  data: VnpayIpnRequest
+): Promise<ApiResult<VnpayIpnResponse>> {
+  return apiClient.post<VnpayIpnResponse>("/payment/vnpay-ipn", data);
 }
 
 /**

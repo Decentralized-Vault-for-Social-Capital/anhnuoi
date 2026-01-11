@@ -41,6 +41,7 @@ export const api = {
     getTransactions: paymentService.getTransactions,
     getOrderStatus: paymentService.getOrderStatus,
     getExchangeRate: paymentService.getExchangeRate,
+    triggerVnpayIpn: paymentService.triggerVnpayIpn,
     calculateTokenAmount: paymentService.calculateTokenAmount,
     redirectToPayment: paymentService.redirectToPayment,
     parsePaymentResult: paymentService.parsePaymentResult,

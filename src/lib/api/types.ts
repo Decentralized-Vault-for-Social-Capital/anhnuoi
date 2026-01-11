@@ -93,6 +93,17 @@ export interface ExchangeRateResponse {
   tokenSymbol: string;
 }
 
+export interface VnpayIpnRequest {
+  wallet: string;
+  amount: number;
+}
+
+export interface VnpayIpnResponse {
+  success: boolean;
+  message: string;
+  txHash?: string;
+}
+
 // ============================================================================
 // Webhook Types
 // ============================================================================

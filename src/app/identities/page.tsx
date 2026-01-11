@@ -23,54 +23,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { identities, type Identity } from "@/lib/data/identities";
 import { cn } from "@/lib/utils";
-
-type Language = "vi" | "en";
+import { useLanguage } from "@/lib/i18n";
 
 export default function IdentitiesPage() {
-  const [language, setLanguage] = useState<Language>("vi");
+  const { t, language, toggleLanguage } = useLanguage();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
-
-  const t = {
-    vi: {
-      title: "Các Trung tâm Nuôi Em",
-      subtitle:
-        "Danh sách các trung tâm hỗ trợ trẻ em được xác thực trên blockchain",
-      backToHome: "Quay lại trang chủ",
-      established: "Thành lập",
-      children: "em nhỏ",
-      location: "Địa điểm",
-      mission: "Sứ mệnh",
-      impact: "Tác động",
-      features: "Chương trình hỗ trợ",
-      contractAddress: "Địa chỉ hợp đồng",
-      viewOnExplorer: "Xem trên Explorer",
-      supportNow: "Ủng hộ ngay",
-      verifiedOnBlockchain: "Đã xác thực trên Blockchain",
-      totalCenters: "Trung tâm",
-      totalChildren: "Em nhỏ được hỗ trợ",
-      transparentDonations: "Minh bạch 100%",
-    },
-    en: {
-      title: "Nuoi Em Centers",
-      subtitle: "List of verified child support centers on the blockchain",
-      backToHome: "Back to Home",
-      established: "Established",
-      children: "children",
-      location: "Location",
-      mission: "Mission",
-      impact: "Impact",
-      features: "Support Programs",
-      contractAddress: "Contract Address",
-      viewOnExplorer: "View on Explorer",
-      supportNow: "Support Now",
-      verifiedOnBlockchain: "Verified on Blockchain",
-      totalCenters: "Centers",
-      totalChildren: "Children Supported",
-      transparentDonations: "100% Transparent",
-    },
-  };
-
-  const text = t[language];
 
   const handleCopyAddress = async (address: string) => {
     await navigator.clipboard.writeText(address);
@@ -108,13 +65,13 @@ export default function IdentitiesPage() {
               className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>{text.backToHome}</span>
+              <span>{t.common.backToHome}</span>
             </Link>
 
             {/* Language Switcher */}
             <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full p-1">
               <button
-                onClick={() => setLanguage("vi")}
+                onClick={() => language === "en" && toggleLanguage()}
                 className={cn(
                   "px-4 py-2 rounded-full text-sm font-medium transition-all",
                   language === "vi"
@@ -125,7 +82,7 @@ export default function IdentitiesPage() {
                 🇻🇳 Tiếng Việt
               </button>
               <button
-                onClick={() => setLanguage("en")}
+                onClick={() => language === "vi" && toggleLanguage()}
                 className={cn(
                   "px-4 py-2 rounded-full text-sm font-medium transition-all",
                   language === "en"
@@ -143,14 +100,14 @@ export default function IdentitiesPage() {
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
               <Shield className="w-4 h-4 text-white" />
               <span className="text-white text-sm font-medium">
-                {text.verifiedOnBlockchain}
+                {t.common.verifiedOnBlockchain}
               </span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              {text.title}
+              {t.identities.title}
             </h1>
             <p className="text-white/90 text-lg max-w-2xl mx-auto">
-              {text.subtitle}
+              {t.identities.subtitle}
             </p>
 
             {/* Stats */}
@@ -159,16 +116,20 @@ export default function IdentitiesPage() {
                 <p className="text-3xl font-bold text-white">
                   {identities.length}
                 </p>
-                <p className="text-white/80 text-sm">{text.totalCenters}</p>
+                <p className="text-white/80 text-sm">
+                  {t.identities.totalCenters}
+                </p>
               </div>
               <div className="bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-4 text-center">
                 <p className="text-3xl font-bold text-white">{totalChildren}</p>
-                <p className="text-white/80 text-sm">{text.totalChildren}</p>
+                <p className="text-white/80 text-sm">
+                  {t.identities.totalChildren}
+                </p>
               </div>
               <div className="bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-4 text-center">
                 <p className="text-3xl font-bold text-white">⛓️</p>
                 <p className="text-white/80 text-sm">
-                  {text.transparentDonations}
+                  {t.common.transparent100}
                 </p>
               </div>
             </div>
@@ -184,7 +145,7 @@ export default function IdentitiesPage() {
               key={identity.id}
               identity={identity}
               language={language}
-              text={text}
+              t={t}
               index={index}
               copiedAddress={copiedAddress}
               onCopyAddress={handleCopyAddress}
@@ -198,8 +159,8 @@ export default function IdentitiesPage() {
 
 interface IdentityCardProps {
   identity: Identity;
-  language: Language;
-  text: Record<string, string>;
+  language: "vi" | "en";
+  t: ReturnType<typeof useLanguage>["t"];
   index: number;
   copiedAddress: string | null;
   onCopyAddress: (address: string) => void;
@@ -208,7 +169,7 @@ interface IdentityCardProps {
 function IdentityCard({
   identity,
   language,
-  text,
+  t,
   index,
   copiedAddress,
   onCopyAddress,
@@ -254,7 +215,7 @@ function IdentityCard({
             <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 text-center">
               <div className="flex items-center gap-2 text-white">
                 <Calendar className="w-4 h-4" />
-                <span className="font-medium">{text.established}</span>
+                <span className="font-medium">{t.common.established}</span>
               </div>
               <p className="text-xl font-bold text-white">
                 {identity.established}
@@ -263,7 +224,7 @@ function IdentityCard({
             <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 text-center">
               <div className="flex items-center gap-2 text-white">
                 <Users className="w-4 h-4" />
-                <span className="font-medium">{text.children}</span>
+                <span className="font-medium">{t.common.children}</span>
               </div>
               <p className="text-xl font-bold text-white">
                 {identity.childrenCount}
@@ -285,7 +246,9 @@ function IdentityCard({
           <div className={`${bgColor} rounded-2xl p-5`}>
             <div className="flex items-center gap-2 mb-3">
               <Target className={`w-5 h-5 ${accentColor}`} />
-              <h3 className={`font-bold ${accentColor}`}>{text.mission}</h3>
+              <h3 className={`font-bold ${accentColor}`}>
+                {t.identities.mission}
+              </h3>
             </div>
             <p className="text-gray-700 text-sm leading-relaxed">
               {identity.mission[language]}
@@ -296,7 +259,9 @@ function IdentityCard({
           <div className={`${bgColor} rounded-2xl p-5`}>
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className={`w-5 h-5 ${accentColor}`} />
-              <h3 className={`font-bold ${accentColor}`}>{text.impact}</h3>
+              <h3 className={`font-bold ${accentColor}`}>
+                {t.identities.impact}
+              </h3>
             </div>
             <p className="text-gray-700 text-sm leading-relaxed">
               {identity.impact[language]}
@@ -308,7 +273,7 @@ function IdentityCard({
         <div className="mt-6">
           <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-            {text.features}
+            {t.identities.features}
           </h3>
           <div className="flex flex-wrap gap-2">
             {identity.features[language].map((feature, idx) => (
@@ -333,7 +298,7 @@ function IdentityCard({
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-blue-500" />
               <h3 className="font-bold text-gray-800">
-                {text.contractAddress}
+                {t.identities.contractAddress}
               </h3>
             </div>
             <div className="flex items-center gap-2 text-emerald-600 text-sm">
@@ -364,7 +329,7 @@ function IdentityCard({
             className="inline-flex items-center gap-2 text-blue-500 hover:text-blue-600 text-sm mt-3"
           >
             <Globe className="w-4 h-4" />
-            {text.viewOnExplorer}
+            {t.common.viewOnExplorer}
             <ExternalLink className="w-3 h-3" />
           </a>
         </div>
@@ -382,7 +347,7 @@ function IdentityCard({
               )}
             >
               <Heart className="w-5 h-5 mr-2" />
-              {text.supportNow}
+              {t.common.supportNow}
             </Button>
           </Link>
         </div>

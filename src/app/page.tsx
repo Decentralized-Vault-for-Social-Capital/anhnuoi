@@ -16,6 +16,7 @@ import {
   Globe,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/lib/i18n";
 
 // Vietnam Retro Modernism Color Constants
 const colors = {
@@ -76,6 +77,7 @@ const SemiCircle = ({
 export default function Home() {
   const router = useRouter();
   const { login, isAuthenticated, isLoading } = useAuth();
+  const { t } = useLanguage();
 
   const handleAction = () => {
     if (isAuthenticated) {
@@ -116,7 +118,7 @@ export default function Home() {
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#7D8A4E]/10 rounded-full mb-6">
                 <span className="w-2 h-2 rounded-full bg-[#7D8A4E]" />
                 <span className="text-[#7D8A4E] text-sm font-semibold uppercase tracking-wider">
-                  Mùa 12 • 2025—2026
+                  {t.home.season}
                 </span>
               </div>
 
@@ -125,13 +127,11 @@ export default function Home() {
               </h1>
 
               <p className="text-xl md:text-2xl text-[#5C4033] mb-4 font-medium">
-                Bữa cơm níu chân trẻ tới trường
+                {t.home.tagline}
               </p>
 
               <p className="text-[#6B7280] leading-relaxed mb-8 max-w-lg">
-                Dự án từ thiện phi tập trung đầu tiên tại Việt Nam, sử dụng
-                blockchain để đảm bảo mọi đóng góp đều minh bạch và đến đúng
-                người cần.
+                {t.home.description}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
@@ -142,10 +142,10 @@ export default function Home() {
                   disabled={isLoading}
                 >
                   {isAuthenticated
-                    ? "Nhận mã Nuôi Em"
+                    ? t.home.getMealCode
                     : isLoading
-                    ? "Đang kết nối..."
-                    : "Tham gia ngay"}
+                    ? t.common.connecting
+                    : t.home.joinNow}
                   <ChevronRight className="w-5 h-5 ml-2" />
                 </Button>
 
@@ -159,7 +159,7 @@ export default function Home() {
                       ?.scrollIntoView({ behavior: "smooth" })
                   }
                 >
-                  Tìm hiểu thêm
+                  {t.home.learnMore}
                 </Button>
               </div>
             </div>
@@ -477,10 +477,14 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { value: "120K+", label: "Em được nuôi", icon: Users },
-              { value: "200+", label: "Điểm trường", icon: MapPin },
-              { value: "12", label: "Năm hoạt động", icon: Calendar },
-              { value: "8.5K", label: "Đồng/bữa ăn", icon: Coins },
+              {
+                value: "120K+",
+                labelKey: "childrenSupported" as const,
+                icon: Users,
+              },
+              { value: "200+", labelKey: "schools" as const, icon: MapPin },
+              { value: "12", labelKey: "provinces" as const, icon: Calendar },
+              { value: "8.5K", labelKey: "costPerMeal" as const, icon: Coins },
             ].map((stat, index) => (
               <div key={index} className="group">
                 <div className="w-16 h-16 mx-auto mb-4 bg-white/10 rounded-2xl flex items-center justify-center group-hover:bg-white/20 transition-colors">
@@ -489,7 +493,7 @@ export default function Home() {
                 <p className="text-4xl md:text-5xl font-bold text-white mb-2">
                   {stat.value}
                 </p>
-                <p className="text-white/70">{stat.label}</p>
+                <p className="text-white/70">{t.home.stats[stat.labelKey]}</p>
               </div>
             ))}
           </div>
@@ -510,10 +514,10 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <span className="inline-block text-[#7D8A4E] text-sm font-semibold uppercase tracking-[0.2em] mb-4">
-              Cách thức
+              {t.header.howItWorks}
             </span>
             <h2 className="font-[family-name:var(--font-montserrat)] text-3xl md:text-4xl lg:text-5xl font-bold text-[#2D3A2E]">
-              Đơn giản và minh bạch
+              {t.home.howItWorks.title}
             </h2>
           </div>
 
@@ -521,27 +525,24 @@ export default function Home() {
             {[
               {
                 step: "01",
-                title: "Đăng nhập",
-                description:
-                  "Đăng nhập bằng email hoặc mạng xã hội qua Web3Auth. Không cần cài đặt ví crypto.",
+                title: t.home.howItWorks.step1Title,
+                description: t.home.howItWorks.step1Desc,
                 color: "border-[#C25E44]",
                 bgColor: "bg-[#C25E44]/5",
                 textColor: "text-[#C25E44]",
               },
               {
                 step: "02",
-                title: "Nhận mã NE",
-                description:
-                  "Mỗi mã tương ứng một em nhỏ cụ thể. Bạn biết chính xác mình đang giúp ai.",
+                title: t.home.howItWorks.step2Title,
+                description: t.home.howItWorks.step2Desc,
                 color: "border-[#7D8A4E]",
                 bgColor: "bg-[#7D8A4E]/5",
                 textColor: "text-[#7D8A4E]",
               },
               {
                 step: "03",
-                title: "Theo dõi",
-                description:
-                  "Nhận cập nhật ảnh và video về em nhỏ hàng tháng. Mọi giao dịch ghi trên blockchain.",
+                title: t.home.howItWorks.step4Title,
+                description: t.home.howItWorks.step4Desc,
                 color: "border-[#E9A164]",
                 bgColor: "bg-[#E9A164]/5",
                 textColor: "text-[#E9A164]",
@@ -586,24 +587,24 @@ export default function Home() {
 
         <div className="relative max-w-4xl mx-auto px-6 text-center">
           <span className="inline-block text-white/70 text-sm font-semibold uppercase tracking-[0.2em] mb-4">
-            Chi phí
+            {t.home.pricing.label}
           </span>
 
           <h2 className="font-[family-name:var(--font-montserrat)] text-4xl md:text-6xl font-bold text-white mb-6">
             1.450.000đ
             <span className="block text-2xl md:text-3xl font-normal text-white/80 mt-2">
-              / năm học
+              {t.home.pricing.perYear}
             </span>
           </h2>
 
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-8 max-w-md mx-auto">
-            <p className="text-white/90 mb-2">
-              150.000đ/tháng × 9 tháng học + 100.000đ cơ sở vật chất
-            </p>
+            <p className="text-white/90 mb-2">{t.home.pricing.breakdown}</p>
             <p className="text-white/70 text-sm">
-              Tương đương khoảng{" "}
-              <span className="text-white font-bold">4.000đ/ngày</span> — ít hơn
-              một ly trà đá
+              {t.home.pricing.equivalent}{" "}
+              <span className="text-white font-bold">
+                4.000đ{t.home.pricing.perDay}
+              </span>{" "}
+              {t.home.pricing.lessThan}
             </p>
           </div>
 
@@ -613,7 +614,7 @@ export default function Home() {
             className="bg-white text-[#7D8A4E] hover:bg-white/90 font-bold text-base px-10 py-6 rounded-xl transition-all duration-200 hover:scale-[1.02] hover:cursor-pointer"
             disabled={isLoading}
           >
-            {isAuthenticated ? "Nhận mã Nuôi Em" : "Bắt đầu ngay"}
+            {isAuthenticated ? t.home.getMealCode : t.home.pricing.startNow}
             <Heart className="w-5 h-5 ml-2" />
           </Button>
         </div>
@@ -624,10 +625,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <span className="inline-block text-[#E9A164] text-sm font-semibold uppercase tracking-[0.2em] mb-4">
-              Hình ảnh
+              {t.home.gallery.label}
             </span>
             <h2 className="font-[family-name:var(--font-montserrat)] text-3xl md:text-4xl lg:text-5xl font-bold text-[#2D3A2E]">
-              Những nụ cười từ vùng cao
+              {t.home.gallery.title}
             </h2>
           </div>
 
@@ -635,7 +636,7 @@ export default function Home() {
             <div className="col-span-6 md:col-span-4 aspect-[16/9] relative rounded-2xl overflow-hidden shadow-lg group">
               <Image
                 src="/anhnuoi/nuoi_em_3.jpg"
-                alt="Trẻ em ăn cơm"
+                alt={t.home.gallery.childrenEating}
                 fill
                 sizes="(max-width: 768px) 100vw, 66vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -645,7 +646,7 @@ export default function Home() {
             <div className="col-span-3 md:col-span-2 aspect-square relative rounded-2xl overflow-hidden shadow-lg group">
               <Image
                 src="/anhnuoi/nuoi_em_4.jpg"
-                alt="Em cảm ơn"
+                alt={t.home.gallery.thankYou}
                 fill
                 sizes="(max-width: 768px) 50vw, 33vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -654,7 +655,7 @@ export default function Home() {
             <div className="col-span-3 md:col-span-2 aspect-square relative rounded-2xl overflow-hidden shadow-lg group">
               <Image
                 src="/anhnuoi/nuoi_em.jpg"
-                alt="Nuôi em"
+                alt={t.home.gallery.nuoiEm}
                 fill
                 sizes="(max-width: 768px) 50vw, 33vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -663,7 +664,7 @@ export default function Home() {
             <div className="col-span-6 md:col-span-4 aspect-[16/9] relative rounded-2xl overflow-hidden shadow-lg group">
               <Image
                 src="/anhnuoi/den_vau.jpg"
-                alt="Người sáng lập"
+                alt={t.home.gallery.founder}
                 fill
                 sizes="(max-width: 768px) 100vw, 66vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -685,14 +686,13 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <span className="inline-block text-[#C25E44] text-sm font-semibold uppercase tracking-[0.2em] mb-4">
-              Địa bàn hoạt động
+              {t.home.locations.label}
             </span>
             <h2 className="font-[family-name:var(--font-montserrat)] text-3xl md:text-4xl lg:text-5xl font-bold text-[#2D3A2E] mb-4">
-              900+ xã khó khăn nhất
+              {t.home.locations.title}
             </h2>
             <p className="text-[#6B7280] max-w-2xl mx-auto">
-              Trải dài từ Tây Bắc đến Tây Nguyên, nơi những đứa trẻ cần sự giúp
-              đỡ nhất
+              {t.home.locations.description}
             </p>
           </div>
 
@@ -767,12 +767,11 @@ export default function Home() {
           </div>
 
           <h2 className="font-[family-name:var(--font-montserrat)] text-3xl md:text-5xl font-bold mb-6 leading-tight">
-            Mỗi bữa cơm là một ước mơ được chắp cánh
+            {t.home.cta.title}
           </h2>
 
           <p className="text-white/70 mb-10 text-lg max-w-xl mx-auto">
-            Cảm ơn bạn đã dành thời gian tìm hiểu. Sự quan tâm của bạn đã là một
-            món quà quý giá.
+            {t.home.cta.description}
           </p>
 
           <Button
@@ -781,7 +780,7 @@ export default function Home() {
             className="bg-[#C25E44] hover:bg-[#A14D38] text-white font-bold text-base px-10 py-6 rounded-xl border-2 border-[#C25E44] hover:border-[#A14D38] transition-all duration-200 hover:scale-[1.02] hover:cursor-pointer"
             disabled={isLoading}
           >
-            {isAuthenticated ? "Nhận mã Nuôi Em" : "Bắt đầu ngay"}
+            {isAuthenticated ? t.home.getMealCode : t.home.pricing.startNow}
             <ChevronRight className="w-5 h-5 ml-2" />
           </Button>
         </div>
@@ -799,20 +798,20 @@ export default function Home() {
                 </div>
                 <div>
                   <span className="text-xl font-bold block">Nuôi Em</span>
-                  <span className="text-white/50 text-sm">Anh Nuôi</span>
+                  <span className="text-white/50 text-sm">
+                    {t.home.footer.brandSubtitle}
+                  </span>
                 </div>
               </div>
               <p className="text-white/60 text-sm leading-relaxed max-w-md">
-                Phiên bản phi tập trung của dự án Nuôi Em, sử dụng blockchain để
-                minh bạch hóa từ thiện. Mỗi đồng bạn góp đều được ghi nhận và có
-                thể truy vết.
+                {t.home.footer.brandDescription}
               </p>
             </div>
 
             {/* Contact */}
             <div>
               <p className="text-white/50 text-sm mb-4 uppercase tracking-wider font-semibold">
-                Liên hệ
+                {t.home.footer.contact}
               </p>
               <div className="space-y-3">
                 <a
@@ -834,11 +833,11 @@ export default function Home() {
           </div>
 
           <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-white/40 text-sm">
-              © 2026 Nuôi Em — Decentralized Charity
-            </p>
+            <p className="text-white/40 text-sm">{t.home.footer.copyright}</p>
             <div className="flex items-center gap-2">
-              <span className="text-white/40 text-xs">Powered by</span>
+              <span className="text-white/40 text-xs">
+                {t.home.footer.poweredBy}
+              </span>
               <span className="text-[#7D8A4E] text-xs font-semibold">
                 Blockchain
               </span>
