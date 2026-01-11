@@ -17,6 +17,7 @@ The Relayer API provides blockchain integration services for converting fiat (VN
   - [Auth Endpoints](#auth-endpoints)
   - [Payment Endpoints](#payment-endpoints)
   - [Impact Endpoints](#impact-endpoints)
+  - [Child SBT Endpoints](#child-sbt-endpoints)
   - [Webhook Endpoints](#webhook-endpoints)
 - [Response Formats](#response-formats)
 - [Error Codes](#error-codes)
@@ -96,9 +97,9 @@ Register or login a user with Web3Auth credentials.
 ```
 
 **Parameters:**
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `walletAddress` | string | Yes | Ethereum wallet address from Web3Auth provider |
+| Field           | Type   | Required | Description                                    |
+| --------------- | ------ | -------- | ---------------------------------------------- |
+| `walletAddress` | string | Yes      | Ethereum wallet address from Web3Auth provider |
 
 **cURL Example:**
 ```bash
@@ -190,11 +191,11 @@ curl -X POST http://localhost:3000/api/payment/create \
 ```
 
 **Parameters:**
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `amount` | number | Yes | Payment amount in VND (minimum: 10,000) |
-| `bankCode` | string | No | Bank code for direct payment (e.g., "NCB", "VIETCOMBANK") |
-| `language` | string | No | Payment page language: "vn" or "en" (default: "vn") |
+| Field      | Type   | Required | Description                                               |
+| ---------- | ------ | -------- | --------------------------------------------------------- |
+| `amount`   | number | Yes      | Payment amount in VND (minimum: 10,000)                   |
+| `bankCode` | string | No       | Bank code for direct payment (e.g., "NCB", "VIETCOMBANK") |
+| `language` | string | No       | Payment page language: "vn" or "en" (default: "vn")       |
 
 **Response:**
 ```json
@@ -239,10 +240,19 @@ VNPay return URL handler (user redirect after payment).
 
 **Response:** Redirects to frontend with query parameters:
 ```
-{FRONTEND_URL}/payment/result?success=true&orderId=xxx&message=Payment%20successful&amount=100000
+{FRONTEND_URL}/payment/result?success=true&orderId=xxx&message=Payment%20successful&amount=100000&txHash=0xabcdef...
 ```
 
-**Note:** This endpoint is called by VNPay and the user's browser. Do not call directly.
+**Redirect Query Parameters:**
+| Parameter | Type    | Description                                                                                    |
+| --------- | ------- | ---------------------------------------------------------------------------------------------- |
+| `success` | boolean | Whether the payment was successful                                                             |
+| `orderId` | string  | The order ID from the payment                                                                  |
+| `message` | string  | Human-readable status message                                                                  |
+| `amount`  | number  | Payment amount in VND (optional)                                                               |
+| `txHash`  | string  | Blockchain transaction hash for minted tokens (optional, only present if minting is completed) |
+
+**Note:** This endpoint is called by VNPay and the user's browser. Do not call directly. The `txHash` parameter is included when the blockchain transaction has been processed. If minting is still in progress, poll the `/api/payment/order/:orderId` endpoint to get the `txHash`.
 
 **cURL Example:** ⚠️ Not recommended - This endpoint should only be called by VNPay.
 
@@ -282,9 +292,9 @@ Get the authenticated user's transaction history.
 **Authentication:** Required (Web3Auth JWT)
 
 **Query Parameters:**
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `limit` | number | No | Number of transactions to return (default: 50, max: 100) |
+| Field   | Type   | Required | Description                                              |
+| ------- | ------ | -------- | -------------------------------------------------------- |
+| `limit` | number | No       | Number of transactions to return (default: 50, max: 100) |
 
 **Example Request:**
 ```
@@ -343,9 +353,9 @@ Get the status of a specific order.
 **Authentication:** Required (Web3Auth JWT)
 
 **Path Parameters:**
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `orderId` | string | Yes | The order ID returned from create payment |
+| Field     | Type   | Required | Description                               |
+| --------- | ------ | -------- | ----------------------------------------- |
+| `orderId` | string | Yes      | The order ID returned from create payment |
 
 **Example Request:**
 ```
@@ -416,11 +426,11 @@ Submit proof of impact (image) to IPFS and record on blockchain.
 **Authentication:** Required (Web3Auth JWT)
 
 **Request Body:** `multipart/form-data`
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `image` | File | Yes | Image file (JPEG, PNG, WebP, max 5MB) |
-| `campaignId` | number | Yes | Campaign identifier (positive integer) |
-| `description` | string | No | Description of the proof |
+| Field         | Type   | Required | Description                            |
+| ------------- | ------ | -------- | -------------------------------------- |
+| `image`       | File   | Yes      | Image file (JPEG, PNG, WebP, max 5MB)  |
+| `campaignId`  | number | Yes      | Campaign identifier (positive integer) |
+| `description` | string | No       | Description of the proof               |
 
 **cURL Example:**
 ```bash
@@ -458,9 +468,9 @@ Retrieve all proofs submitted for a specific campaign from the blockchain.
 **Authentication:** Required (Web3Auth JWT)
 
 **Path Parameters:**
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `campaignId` | number | Yes | Campaign identifier (positive integer) |
+| Field        | Type   | Required | Description                            |
+| ------------ | ------ | -------- | -------------------------------------- |
+| `campaignId` | number | Yes      | Campaign identifier (positive integer) |
 
 **cURL Example:**
 ```bash
@@ -557,6 +567,324 @@ curl -X GET http://localhost:3000/api/v1/impact/relayer/balance \
 **Error Responses:**
 - `401 Unauthorized`: Invalid or missing JWT token
 - `500 Internal Server Error`: Failed to retrieve balance
+
+---
+
+### Child SBT Endpoints
+
+These endpoints handle child registration and Soulbound Token (SBT) operations for the scholarship program.
+
+#### `POST /api/v1/child/upload-image`
+
+Upload a child's avatar image to IPFS.
+
+**Authentication:** Required (Web3Auth JWT)
+
+**Content-Type:** `multipart/form-data`
+
+**Request Body (FormData):**
+| Field       | Type   | Required | Description                            |
+| ----------- | ------ | -------- | -------------------------------------- |
+| image       | file   | Yes      | Image file (JPEG, PNG, WebP, max 10MB) |
+| name        | string | No       | Custom name for the file               |
+| description | string | No       | Description of the image               |
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/v1/child/upload-image \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -F "image=@/path/to/child_photo.jpg" \
+  -F "name=child_avatar" \
+  -F "description=Avatar for scholarship child"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "cid": "bafkreigj5k7yhzm4x5n6qzh7oqrrvwqxz5j6tfhqa3pljxvqdmkfqm4y5u",
+    "url": "https://gateway.pinata.cloud/ipfs/bafkreigj5k7yhzm4x5n6qzh7oqrrvwqxz5j6tfhqa3pljxvqdmkfqm4y5u"
+  }
+}
+```
+
+---
+
+#### `POST /api/v1/child/upload-image-url`
+
+Upload an image from a URL to IPFS (fetches the image and uploads).
+
+**Authentication:** Required (Web3Auth JWT)
+
+**Request Body:**
+```json
+{
+  "imageUrl": "https://example.com/child_photo.jpg",
+  "name": "child_avatar",
+  "description": "Avatar for scholarship child"
+}
+```
+
+**Parameters:**
+| Field       | Type   | Required | Description                |
+| ----------- | ------ | -------- | -------------------------- |
+| imageUrl    | string | Yes      | URL of the image to upload |
+| name        | string | No       | Custom name for the file   |
+| description | string | No       | Description of the image   |
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/v1/child/upload-image-url \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "imageUrl": "https://example.com/child_photo.jpg",
+    "name": "child_avatar",
+    "description": "Avatar for scholarship child"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "cid": "bafkreigj5k7yhzm4x5n6qzh7oqrrvwqxz5j6tfhqa3pljxvqdmkfqm4y5u",
+    "url": "https://gateway.pinata.cloud/ipfs/bafkreigj5k7yhzm4x5n6qzh7oqrrvwqxz5j6tfhqa3pljxvqdmkfqm4y5u"
+  }
+}
+```
+
+---
+
+#### `GET /api/v1/child/next-token-id`
+
+Get the next token ID from the SBT contract. Used to name metadata files correctly before upload.
+
+**Authentication:** Required (Web3Auth JWT)
+
+**Query Parameters:**
+| Field           | Type   | Required | Description                            |
+| --------------- | ------ | -------- | -------------------------------------- |
+| contractAddress | string | Yes      | The identity registry contract address |
+
+**cURL Example:**
+```bash
+curl -X GET "http://localhost:3000/api/v1/child/next-token-id?contractAddress=0x1234567890abcdef1234567890abcdef12345678" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "nextTokenId": "5",
+    "currentTokenId": "4",
+    "contractAddress": "0x1234567890abcdef1234567890abcdef12345678"
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Missing or invalid contractAddress
+- `401 Unauthorized`: Invalid or missing JWT token
+- `500 Internal Server Error`: Failed to get token ID from contract
+
+---
+
+#### `POST /api/v1/child/upload-metadata`
+
+Upload child metadata to IPFS. Automatically names the file with the next token ID.
+
+**Authentication:** Required (Web3Auth JWT)
+
+**Request Body:**
+```json
+{
+  "contractAddress": "0x1234567890abcdef1234567890abcdef12345678",
+  "name": "Nguyễn Văn A",
+  "age": 10,
+  "grade": "5A",
+  "schoolName": "Trường Tiểu học Hòa Bình",
+  "descriptionVi": "Học sinh nghèo vượt khó, thành tích học tập xuất sắc",
+  "descriptionEn": "Disadvantaged student with excellent academic performance",
+  "avatarUrl": "https://gateway.pinata.cloud/ipfs/bafkreigj5k7yhzm4x5n6qzh7oqrrvwqxz5j6tfhqa3pljxvqdmkfqm4y5u"
+}
+```
+
+**Parameters:**
+| Field           | Type   | Required | Description                                     |
+| --------------- | ------ | -------- | ----------------------------------------------- |
+| contractAddress | string | Yes      | The identity registry contract address          |
+| name            | string | Yes      | Child's name                                    |
+| age             | number | Yes      | Child's age (1-100)                             |
+| grade           | string | Yes      | School grade (e.g., "5A", "Grade 5")            |
+| schoolName      | string | Yes      | Name of the school                              |
+| descriptionVi   | string | Yes      | Vietnamese description of the child's situation |
+| descriptionEn   | string | Yes      | English description                             |
+| avatarUrl       | string | Yes      | IPFS URL of the uploaded avatar image           |
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/v1/child/upload-metadata \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contractAddress": "0x1234567890abcdef1234567890abcdef12345678",
+    "name": "Nguyễn Văn A",
+    "age": 10,
+    "grade": "5A",
+    "schoolName": "Trường Tiểu học Hòa Bình",
+    "descriptionVi": "Học sinh nghèo vượt khó, thành tích học tập xuất sắc",
+    "descriptionEn": "Disadvantaged student with excellent academic performance",
+    "avatarUrl": "https://gateway.pinata.cloud/ipfs/bafkreigj5k7yhzm4x5n6qzh7oqrrvwqxz5j6tfhqa3pljxvqdmkfqm4y5u"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "cid": "bafkreiabcdef123456789",
+    "url": "https://gateway.pinata.cloud/ipfs/bafkreiabcdef123456789",
+    "metadataUrl": "https://gateway.pinata.cloud/ipfs/bafkreiabcdef123456789/5.json",
+    "tokenId": "5"
+  }
+}
+```
+
+---
+
+#### `POST /api/v1/child/create-sbt`
+
+Create a new SBT (Soulbound Token) contract via the Factory contract.
+
+**Authentication:** Required (Web3Auth JWT)
+
+**Request Body:**
+```json
+{
+  "baseURI": "ipfs://bafkreiabcdef123456789/"
+}
+```
+
+**Parameters:**
+| Field   | Type   | Required | Description                                          |
+| ------- | ------ | -------- | ---------------------------------------------------- |
+| baseURI | string | Yes      | Base URI for the SBT metadata (IPFS CID or full URL) |
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/v1/child/create-sbt \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "baseURI": "ipfs://bafkreiabcdef123456789/"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "txHash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+    "contractAddress": "0xNewSBTContractAddress",
+    "blockNumber": 12345678,
+    "explorerUrl": "https://explorer.sepolia.mantle.xyz/tx/0x1234..."
+  }
+}
+```
+
+---
+
+#### `GET /api/v1/child/sbt-config`
+
+Get the SBT service configuration status.
+
+**Authentication:** Required (Web3Auth JWT)
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:3000/api/v1/child/sbt-config \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "factory": true,
+    "relayerAddress": "0x1234567890abcdef1234567890abcdef12345678"
+  }
+}
+```
+
+**Note:** The identity registry contract address is now passed directly to endpoints (`/next-token-id`, `/upload-metadata`) instead of being configured globally.
+```
+
+---
+
+#### `POST /api/v1/child/upload-json`
+
+Upload generic JSON data to IPFS.
+
+**Authentication:** Required (Web3Auth JWT)
+
+**Request Body:**
+```json
+{
+  "data": {
+    "name": "Custom Metadata",
+    "description": "Any JSON data to store on IPFS",
+    "attributes": [
+      { "trait_type": "Type", "value": "Scholarship" }
+    ]
+  },
+  "fileName": "custom_metadata.json"
+}
+```
+
+**Parameters:**
+| Field    | Type   | Required | Description                |
+| -------- | ------ | -------- | -------------------------- |
+| data     | object | Yes      | JSON data to upload        |
+| fileName | string | Yes      | Name for the uploaded file |
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/v1/child/upload-json \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": {
+      "name": "Campaign #1 Metadata",
+      "description": "Scholarship campaign for 2025",
+      "totalBeneficiaries": 100
+    },
+    "fileName": "campaign_1.json"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "cid": "bafkreixyz789",
+    "url": "https://gateway.pinata.cloud/ipfs/bafkreixyz789"
+  }
+}
+```
 
 ---
 
@@ -685,13 +1013,13 @@ All error responses follow this format:
 
 ## Error Codes
 
-| HTTP Status | Description |
-|-------------|-------------|
-| `200 OK` | Request succeeded |
-| `400 Bad Request` | Invalid request parameters |
-| `401 Unauthorized` | Missing or invalid authentication token |
-| `404 Not Found` | Resource not found |
-| `500 Internal Server Error` | Server error occurred |
+| HTTP Status                 | Description                             |
+| --------------------------- | --------------------------------------- |
+| `200 OK`                    | Request succeeded                       |
+| `400 Bad Request`           | Invalid request parameters              |
+| `401 Unauthorized`          | Missing or invalid authentication token |
+| `404 Not Found`             | Resource not found                      |
+| `500 Internal Server Error` | Server error occurred                   |
 
 ---
 
@@ -736,12 +1064,48 @@ const params = new URLSearchParams(window.location.search);
 const success = params.get('success') === 'true';
 const orderId = params.get('orderId');
 const message = params.get('message');
+const txHash = params.get('txHash'); // Blockchain transaction hash (if minting completed)
 
 if (success) {
   console.log('Payment successful!');
-  // Poll order status or show success message
+  
+  if (txHash) {
+    // Tokens already minted - show transaction link
+    console.log('Transaction hash:', txHash);
+    const explorerUrl = `https://explorer.sepolia.mantle.xyz/tx/${txHash}`;
+    console.log('View on explorer:', explorerUrl);
+  } else {
+    // Minting in progress - poll order status to get txHash
+    pollOrderStatus(orderId);
+  }
 } else {
   console.log('Payment failed:', message);
+}
+
+// Helper function to poll order status
+async function pollOrderStatus(orderId) {
+  const maxAttempts = 30;
+  const interval = 2000; // 2 seconds
+  
+  for (let i = 0; i < maxAttempts; i++) {
+    const response = await fetch(`/api/payment/order/${orderId}`, {
+      headers: { 'Authorization': `Bearer ${idToken}` }
+    });
+    const { data } = await response.json();
+    
+    if (data.status === 'completed' && data.txHash) {
+      console.log('Minting completed! txHash:', data.txHash);
+      return data.txHash;
+    }
+    
+    if (data.status === 'failed') {
+      throw new Error('Minting failed');
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, interval));
+  }
+  
+  throw new Error('Timeout waiting for minting');
 }
 ```
 

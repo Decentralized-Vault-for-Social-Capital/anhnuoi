@@ -43,7 +43,7 @@ export const web3AuthOptions: Web3AuthOptions = {
     : WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
   //   privateKeyProvider: privateKeyProvider as any,
   uiConfig: {
-    appName: "Nuôi Em",
+    appName: "Anh Nuôi",
     theme: {
       primary: "#C25E44",
     },

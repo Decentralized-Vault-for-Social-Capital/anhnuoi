@@ -25,6 +25,7 @@ import * as healthService from "./services/health";
 import * as authService from "./services/auth";
 import * as paymentService from "./services/payment";
 import * as webhookService from "./services/webhook";
+import * as impactService from "./services/impact";
 
 // Export API namespace
 export const api = {
@@ -47,13 +48,25 @@ export const api = {
   webhook: {
     checkHealth: webhookService.checkWebhookHealth,
   },
+  impact: {
+    submitProof: impactService.submitProof,
+    getCampaignProofs: impactService.getCampaignProofs,
+    getIpfsUrls: impactService.getIpfsUrls,
+    getRelayerBalance: impactService.getRelayerBalance,
+  },
 } as const;
 
 // Export types
 export type * from "./types";
 
 // Export individual services for direct import
-export { healthService, authService, paymentService, webhookService };
+export {
+  healthService,
+  authService,
+  paymentService,
+  webhookService,
+  impactService,
+};
 
 // Export API client for advanced usage
 export { apiClient } from "./client";

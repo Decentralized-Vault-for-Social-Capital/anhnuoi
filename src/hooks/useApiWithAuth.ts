@@ -86,6 +86,36 @@ export function useApiWithAuth() {
     return api.health.check();
   }, []);
 
+  // ============================================================================
+  // Impact API
+  // ============================================================================
+
+  const getCampaignProofs = useCallback(
+    async (campaignId: number) => {
+      const authToken = requireAuth();
+      return api.impact.getCampaignProofs(authToken, campaignId);
+    },
+    [requireAuth]
+  );
+
+  const submitProof = useCallback(
+    async (image: File, campaignId: number, description?: string) => {
+      const authToken = requireAuth();
+      return api.impact.submitProof(authToken, image, campaignId, description);
+    },
+    [requireAuth]
+  );
+
+  const getRelayerBalance = useCallback(async () => {
+    const authToken = requireAuth();
+    return api.impact.getRelayerBalance(authToken);
+  }, [requireAuth]);
+
+  // Public impact endpoints
+  const getIpfsUrls = useCallback((cid: string) => {
+    return api.impact.getIpfsUrls(cid);
+  }, []);
+
   return {
     // State
     token,
@@ -105,6 +135,12 @@ export function useApiWithAuth() {
     checkHealth,
     calculateTokenAmount: api.payment.calculateTokenAmount,
     parsePaymentResult: api.payment.parsePaymentResult,
+
+    // Impact API
+    getCampaignProofs,
+    submitProof,
+    getRelayerBalance,
+    getIpfsUrls,
   };
 }
 

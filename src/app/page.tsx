@@ -121,7 +121,7 @@ export default function Home() {
               </div>
 
               <h1 className="font-[family-name:var(--font-montserrat)] text-5xl md:text-6xl lg:text-7xl font-bold text-[#2D3A2E] mb-6 leading-[1.1]">
-                Nuôi Em
+                Anh Nuôi
               </h1>
 
               <p className="text-xl md:text-2xl text-[#5C4033] mb-4 font-medium">
@@ -830,23 +830,6 @@ export default function Home() {
                   duannuoiem@gmail.com
                 </a>
               </div>
-            </div>
-
-            {/* Links */}
-            <div>
-              <p className="text-white/50 text-sm mb-4 uppercase tracking-wider font-semibold">
-                Dự án gốc
-              </p>
-              <a
-                href="https://www.nuoiem.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[#E9A164] hover:text-[#C25E44] transition-colors text-sm"
-              >
-                <Globe className="w-4 h-4" />
-                nuoiem.com
-                <ChevronRight className="w-4 h-4" />
-              </a>
             </div>
           </div>
 

@@ -3,7 +3,15 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Heart, LogOut, User, ChevronRight } from "lucide-react";
+import {
+  Menu,
+  X,
+  Heart,
+  LogOut,
+  User,
+  ChevronRight,
+  History,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
 
@@ -63,8 +71,8 @@ const Header = () => {
             <Image
               src="/logo.png"
               alt="Ánh Nuôi Logo"
-              width={80}
-              height={80}
+              width={50}
+              height={50}
               className="object-contain"
             />
           </Link>
@@ -88,6 +96,13 @@ const Header = () => {
               className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-md"
             >
               Danh sách em
+            </Link>
+            <Link
+              href="/history"
+              className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium text-md flex items-center gap-1"
+            >
+              <History className="w-4 h-4" />
+              Lịch sử
             </Link>
           </nav>
 
@@ -171,6 +186,14 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Danh sách em
+              </Link>
+              <Link
+                href="/history"
+                className="text-[#2D3A2E] hover:text-[#C25E44] transition-colors font-medium px-2 py-2 flex items-center gap-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <History className="w-4 h-4" />
+                Lịch sử
               </Link>
               <div className="pt-4 mt-2 border-t border-[#E5E1D8]">
                 {showAsLoggedIn ? (

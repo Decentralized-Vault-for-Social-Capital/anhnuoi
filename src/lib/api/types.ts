@@ -101,3 +101,49 @@ export interface WebhookHealthResponse {
   status: "healthy" | "unhealthy";
   timestamp: string;
 }
+
+// ============================================================================
+// Impact Types
+// ============================================================================
+
+export interface SubmitProofResponse {
+  success: boolean;
+  ipfsUrl: string;
+  txHash: string;
+  explorerUrl: string;
+  cid: string;
+}
+
+export interface CampaignProofsResponse {
+  success: boolean;
+  campaignId: number;
+  proofs: string[];
+}
+
+export interface IpfsUrlResponse {
+  primary: string;
+  alternatives: string[];
+}
+
+export interface RelayerBalanceResponse {
+  balance: string;
+  address: string;
+}
+
+// ============================================================================
+// Proof Display Types (Mock Data)
+// ============================================================================
+
+export interface MealProof {
+  id: string;
+  childId: string;
+  childName: string;
+  date: string;
+  mealType: "breakfast" | "lunch" | "dinner";
+  description: string;
+  imageUrl: string;
+  ipfsCid: string;
+  txHash: string;
+  submittedBy: string;
+  verifiedAt: string;
+}

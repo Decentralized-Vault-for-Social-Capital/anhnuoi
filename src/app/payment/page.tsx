@@ -321,7 +321,7 @@ function PaymentContent() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-emerald-500" />
-                  Tỷ giá hiện tại
+                  Quy đổi hiện tại
                 </h2>
                 {isLoadingRate && (
                   <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
@@ -531,7 +531,7 @@ function PaymentContent() {
                     <span className="font-medium">{formatVND(amount)} VNĐ</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Tỷ giá</span>
+                    <span>Quy đổi</span>
                     <span className="font-medium">
                       {exchangeRate
                         ? `${formatVND(exchangeRate.vndPerToken)} VNĐ/Token`
